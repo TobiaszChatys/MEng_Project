@@ -1,11 +1,7 @@
 function [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame)
-    % Get Air Data
+    
     [X1, Y1, U1, V1, Z1] = getAirData(S, frame);
-    
-    % Get Liquid Data
     [X2, Y2, U2, V2, Z2] = getLiquidData(S, frame);
-    
-    % Get Film Data
     [X3, Y3] = getFilmData(S, frame);
 end 
 
