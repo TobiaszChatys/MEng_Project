@@ -1,17 +1,8 @@
 clear; clc; close all;
 
-% Load data
-S = load('L8_G3.mat');
-S = S.S2P_PIV_full_mat_vars;
+S = loadData('L8_G3.mat');
 
-frame = 1;
 frames = 1000;
-
-[X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
-
-% create masks
-
-[Z1_masked, Z2_masked] = createMasks(X1, Y1, X2, Y2, Z1, Z2, X3, Y3);
 
 for frame = 1:frames
 
