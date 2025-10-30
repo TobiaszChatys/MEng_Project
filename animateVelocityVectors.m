@@ -5,7 +5,7 @@ function animateVelocityVectors(S)
     for frame = 1:frames
 
         [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
-        [Z1_masked, Z2_masked] = createMasks(X1, Y1, X2, Y2, Z1, Z2, X3, Y3);
+
         quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
         hold on;
         quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
