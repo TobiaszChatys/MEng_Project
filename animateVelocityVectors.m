@@ -1,11 +1,8 @@
-function animateVelocityVectors(S)
-
-    %frames = size(S.all_u_matrix_air, 3);
-    frames = 100; % For testing purposes, limit to 100 frames
+function animateVelocityVectors(S, frames)  
     for frame = 1:frames
 
         [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
-
+        
         quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
         hold on;
         quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
