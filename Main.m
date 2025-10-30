@@ -16,3 +16,7 @@ plotVectorMap(X1, Y1, U1, V1, X2, Y2, U2, V2, X3, Y3, Z1_masked, Z2_masked);
 %% Animate Velocity Vectors
 frames = 100;
 animateVelocityVectors(S, frames);
+
+%% Capture frames to create GIF
+
+captureFrames(S, frames);

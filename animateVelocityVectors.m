@@ -1,4 +1,7 @@
-function animateVelocityVectors(S, frames)  
+function animateVelocityVectors(S, frames, videoWriter)
+
+    isCapturing = exist('videoWriter', 'var');
+
     for frame = 1:frames
 
         [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
@@ -19,6 +22,13 @@ function animateVelocityVectors(S, frames)
         yticks(y_ticks);
         yticklabels(y_ticks)
         xline(0, 'k--', 'LineWidth', 2);
+
+        if isCapturing
+            frameCapture = getframe(gcf);
+            writeVideo(videoWriter, frameCapture);
+        end
+
         pause(1/60);  % 60 fps
+
     end
 end
