@@ -18,5 +18,5 @@ frames = 100;
 animateVelocityVectors(S, frames);
 
 %% Capture frames to create GIF
-
+frames = size(S.all_v_matrix_air, 3);
 captureFrames(S, frames);
