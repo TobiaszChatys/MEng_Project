@@ -26,9 +26,8 @@ function animateVelocityVectors(S, frames, videoWriter)
         if isCapturing
             frameCapture = getframe(gcf);
             writeVideo(videoWriter, frameCapture);
+        else
+            pause(1/60);  % 60 fps
         end
-
-        pause(1/60);  % 60 fps
-
     end
 end

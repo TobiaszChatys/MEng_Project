@@ -1,7 +1,12 @@
-function captureFrames(S, frames)
-    v = VideoWriter('velocity_vectors_animation.mp4', 'MPEG-4');
-    v.FrameRate = 60; % Set frame rate
+function captureFrames(S, frames, filename)
+
+    [~, name, ~] = fileparts(filename);
+    videoName = [name, '_animation.mp4'];
+
+    v = VideoWriter(videoName, 'MPEG-4');
+    v.FrameRate = 30; % Set frame rate
     open(v);
 
-    animateVelocityVectors(S, frames, v); % Call the animation function
+    animateVelocityVectors(S, frames, v); 
+
 end

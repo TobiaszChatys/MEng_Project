@@ -1,7 +1,7 @@
 clear; clc; close all
 
 % Load data
-S = loadData('L8_G3.mat');  % Pass the filename directly as a string
+[S, filename] = loadData('L8_G3.mat');  % Pass the filename directly as a string
 frame = 10;
 
 %Get all data at once
@@ -18,5 +18,6 @@ frames = 100;
 animateVelocityVectors(S, frames);
 
 %% Capture frames to create GIF
-frames = size(S.all_v_matrix_air, 3);
-captureFrames(S, frames);
+%frames = size(S.all_v_matrix_air, 3);
+frames = 300;
+captureFrames(S, frames, filename);
