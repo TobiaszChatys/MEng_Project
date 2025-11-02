@@ -33,7 +33,7 @@ function plotVectorMap(X1, Y1, U1, V1, X2, Y2, U2, V2, X3, Y3, Z1_masked, Z2_mas
     xlim([-15 15]);
     xlabel('X Position (mm)');
     ylabel('Y Position (mm)');
-    title('L8, G3 Velocity Vector Map');
+    title('L8, G10 Velocity Vector Map');
     ylim([0 28]);
     y_ticks = 0:2:28;
     yticks(y_ticks);

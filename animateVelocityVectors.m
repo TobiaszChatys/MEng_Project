@@ -16,7 +16,7 @@ function animateVelocityVectors(S, frames, videoWriter)
         xlim([-15 15]);
         xlabel('X Position (mm)');
         ylabel('Y Position (mm)');
-        title('L8, G3 Velocity Vector Map');
+        title('L8-G9 Velocity Vector Map');
         ylim([0 28]);
         y_ticks = 0:2:28;
         yticks(y_ticks);

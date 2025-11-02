@@ -8,5 +8,4 @@ function captureFrames(S, frames, filename)
     open(v);
 
     animateVelocityVectors(S, frames, v); 
-
 end
