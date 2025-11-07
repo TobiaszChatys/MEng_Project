@@ -1,7 +1,7 @@
 clear; clc; close all
 
 % Load data
-[S, filename] = loadData('L8_G9.mat');  % Pass the filename directly as a string
+[S, filename] = loadData('L8_G3.mat');  % Pass the filename directly as a string
 frame = 10;
 
 %Get all data at once
