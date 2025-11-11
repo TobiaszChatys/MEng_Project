@@ -1,3 +1,5 @@
+clc; clear; close all;
+
 [S, filename] = loadData('L8_G3.mat'); 
 frame = 339;
 
@@ -16,7 +18,23 @@ fprintf('Min Height: %.2f mm\n', h_min);
 fprintf('Mean Height: %.2f mm\n', h_mean);
 fprintf('Std Dev of Height: %.2f mm\n', h_std);
 
+% Visualising height distribution
+figure;
+histogram(Y3, 5);
+xlabel('Film Height (mm)');
+ylabel('Frequency');
+title('Distribution of Film Heights at Frame 339');
+grid on;
+
+% Add lines for mean, max, min
+hold on;
+xline(h_mean, 'r-', 'Mean', 'LineWidth', 2);
+xline(h_max, 'g-', 'Max', 'LineWidth', 2);
+xline(h_min, 'b-', 'Min', 'LineWidth', 2);
+hold off;
+
 % Plot Velocity Vectors
+figure
 quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
 hold on;
 quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');

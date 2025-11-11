@@ -16,4 +16,5 @@
 - Bin creation
  - Define bins based on film height
  - indexing/pixelation: pixelate the height data, assigning numerical values to diffrent bin heights
- - 
+
+
