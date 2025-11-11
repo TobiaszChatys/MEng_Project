@@ -4,7 +4,7 @@ function captureFrames(S, frames, filename)
     videoName = [name, '_animation.mp4'];
 
     % high resolution figure:
-    fig = figure("Position",[100 100 1920 1080],"color","w","Visible","off");
+    fig = figure("Position",[100 100 1400 1050],"color","w","Visible","off");
 
 
     v = VideoWriter(videoName, 'MPEG-4');
