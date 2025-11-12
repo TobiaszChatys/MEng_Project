@@ -22,6 +22,10 @@ function [X2, Y2, U2, V2, Z2] = getLiquidData(S, frame)
 end
 
 function [X3, Y3] = getFilmData(S, frame)
-    X3 = S.film_x_position(1, 15:1090) * 1e3;
-    Y3 = S.smoothed_film_height_matrix_out(15:1090, frame) * 1e3;
+    X3 = S.film_x_position(1, :) * 1e3;
+    Y3 = S.smoothed_film_height_matrix_out(:, frame) * 1e3;
+
+    remove_negative_indices = Y3 >= 0;
+    X3 = X3(remove_negative_indices);
+    Y3 = Y3(remove_negative_indices);
 end
