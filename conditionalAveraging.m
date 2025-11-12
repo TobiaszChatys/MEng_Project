@@ -1,12 +1,12 @@
 clc; clear; close all;
 
 [S, filename] = loadData('L8_G9.mat'); 
-frames = 1000;
+frames = size(S.smoothed_film_height_matrix_out, 2);
 
 heights = [];
 
 for frame = 1:frames
-    [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, X3, Y3] = getData(S, frame);
+    [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, Y3] = getData(S, frame);
     heights = [heights; Y3(:)];
 end
 
