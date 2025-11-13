@@ -24,10 +24,26 @@ fprintf('Min Height: %.2f mm\n', h_min);
 fprintf('Mean Height: %.2f mm\n', h_mean);
 fprintf('Std Dev of Height: %.2f mm\n', h_std);
 
-% Visualising height distribution
+%% Create bins for conditional averaging
+
+clc
+
+bin_edges = [h_min, 1.0, 1.5, 2.0, 2.5, 3.5, h_max];
+n_bins = length(bin_edges) - 1;
+
+% count data points in each bin
+bin_counts = zeros(n_bins, 1);
+fprintf('\nData Points in Each Bin:\n');
+
+for bin = 1:n_bins
+    bin_counts(bin) = sum(heights >= bin_edges(bin) & heights < bin_edges(bin+1));
+    fprintf('Bin %d (%.2f - %.2f mm): %d data points\n', bin, bin_edges(bin), bin_edges(bin+1), bin_counts(bin));
+end
+
+
+%% Visualising height distribution
 figure;
 histogram(heights, 50);
-h.FaceColor = hex2rgb('#FFC000');
 xlabel('Film Height (mm)');
 ylabel('Frequency');
 title(sprintf('Distribution of Film Heights (All %d Frames)', frames));
@@ -39,6 +55,14 @@ xline(h_mean, 'r--', 'Mean', 'LineWidth', 1);
 xline(h_max, 'g--', 'Max', 'LineWidth', 1);
 xline(h_min, 'b--', 'Min', 'LineWidth', 1);
 hold off;
+
+% add bin edges
+for bin = 1:n_bins+1
+    xline(bin_edges(bin), 'k:');
+end
+
+
+
 
 % % Plot Velocity Vectors
 % figure
