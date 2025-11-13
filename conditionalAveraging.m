@@ -1,7 +1,7 @@
 clc; clear; close all;
 
 [S, filename] = loadData('L8_G9.mat'); 
-frames = size(S.smoothed_film_height_matrix_out, 2);
+frames = size(S.smoothed_film_height_matrix_out, 2) - 1;
 
 heights = [];
 
@@ -17,7 +17,8 @@ h_min = min(heights);
 h_mean = mean(heights);
 h_std = std(heights);
 
-fprintf('Film Height Statistics at Frame %d:\n', frame);
+fprintf('Film Height Statistics (All %d Frames):\n', frames);
+fprintf('Total Data Points: %d\n', length(heights));
 fprintf('Max Height: %.2f mm\n', h_max);
 fprintf('Min Height: %.2f mm\n', h_min);
 fprintf('Mean Height: %.2f mm\n', h_mean);
@@ -25,17 +26,18 @@ fprintf('Std Dev of Height: %.2f mm\n', h_std);
 
 % Visualising height distribution
 figure;
-histogram(heights, 5);
+histogram(heights, 50);
+h.FaceColor = hex2rgb('#FFC000');
 xlabel('Film Height (mm)');
 ylabel('Frequency');
-title('Distribution of Film Heights at Frame 339');
+title(sprintf('Distribution of Film Heights (All %d Frames)', frames));
 grid on;
 
 % Add lines for mean, max, min
 hold on;
-xline(h_mean, 'r-', 'Mean', 'LineWidth', 2);
-xline(h_max, 'g-', 'Max', 'LineWidth', 2);
-xline(h_min, 'b-', 'Min', 'LineWidth', 2);
+xline(h_mean, 'r--', 'Mean', 'LineWidth', 1);
+xline(h_max, 'g--', 'Max', 'LineWidth', 1);
+xline(h_min, 'b--', 'Min', 'LineWidth', 1);
 hold off;
 
 % % Plot Velocity Vectors
