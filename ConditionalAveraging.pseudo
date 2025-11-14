@@ -1,0 +1,65 @@
+// Algorithm for conditional averaging for liquid and air velocity based on 
+// film height measurements from PIV data
+
+// collect all fim heights and degine bins
+
+// Step 1: Collect all heights from all frames:
+    // initialize an empty array to store heights
+    heights = [];
+
+    // loop through all frames to extract heights
+
+    for frame = 1:frames
+        [Y3] = getData(S, frame);
+        heights = [heights; Y3(:)];
+    end
+
+    // calculate min, max, mean heights
+
+    h_max = max(heights);
+    h_min = min(heights);
+    h_mean = mean(heights);
+
+    // Choose the number of bins and define bin edges.
+    // For example, we can define bins based on a histogram approach
+    // looking at the distribution of heights
+
+    bin_edges = [h_min, 1.0, 1.5, 2.0, 2.5, 3.5, h_max];
+    num_bins = length(bin_edges) - 1;
+
+    // Alternatively, we can define bins using linspace
+    // bin_edges = linspace(h_min, h_max, num_bins + 1);
+
+// Step 2: Initialise zero matrices for air and liquid:
+    // Determine velocity dimensions for air and liquid
+    // since U and V have same dimensions, we can use either:
+
+    [U1, U2] = getData(S, 1); // only have to inspect the first frame
+    [num_rows_liquid, num_cols_liquid] = size(U1);
+    [num_rows_air, num_cols_air] = size(U2);
+
+    // For each bin we want a vertically resolved average velocity profile
+    // at each x column, so we initialise 3D matrices:
+    // [num_rows, num_cols, bin_index]
+
+    U_air = zeros(num_rows_air, num_cols_air, num_bins);
+    V_air = zeros(num_rows_air, num_cols_air, num_bins);
+
+    U_liquid = zeros(num_rows_liquid, num_cols_liquid, num_bins);
+    V_liquid = zeros(num_rows_liquid, num_cols_liquid, num_bins);
+
+    // So we can also keep track of the counts for averaging later
+
+    count_liquid = zeros(1, num_cols_liquid, num_bins);
+    count_air = zeros(1, num_cols_air, num_bins);
+
+// Step 3: Loop through each frame and bin the data accordingly
+
+for each frame 1 to frames:
+    [U1, V1, U2, V2, ~, ~, ~, ~, ~, ~, ~, Y3] = getData(S, frame);
+
+
+
+
+
+
