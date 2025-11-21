@@ -57,8 +57,8 @@ xline(h_min, 'b--', 'Min', 'LineWidth', 1);
 hold off;
 
 % add bin edges
-for bin = 1:n_bins+1
-    xline(bin_edges(bin), 'k:');
+for bin = 2:length(bin_edges)-1
+    xline(bin_edges(bin), 'k:', 'LineWidth', 1.5);
 end
 
 
