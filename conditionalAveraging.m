@@ -80,7 +80,7 @@ end
 
 %% Populate bins with velocity data based on height conditions
 
-for frame = 1:10
+for frame = 1:frames
     [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, ~, ~] = getData(S, frame);
 
     % for each spatial point in the liquid phase 
