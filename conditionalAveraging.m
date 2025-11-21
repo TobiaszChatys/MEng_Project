@@ -80,22 +80,45 @@ end
 
 %% Populate bins with velocity data based on height conditions
 
+for frame = 1:10
+    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, ~, ~] = getData(S, frame);
 
+    % for each spatial point in the liquid phase 
+    for i = 1:length(X1(:))
+        % get the height at this point
+        h = Y1(i);
+        for bin = 1:n_bins
+            if h >= bin_edges(bin) && h < bin_edges(bin+1)
+                bin_data(bin).U1 = [bin_data(bin).U1; U1(i)];
+                bin_data(bin).V1 = [bin_data(bin).V1; V1(i)];
+                bin_data(bin).X1 = [bin_data(bin).X1; X1(i)];
+                bin_data(bin).Y1 = [bin_data(bin).Y1; Y1(i)];
+                break;
+            end
+        end
+    end
 
-% % Plot Velocity Vectors
-% figure
-% quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
-% hold on;
-% quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
-% hold on;
-% plot(X3 + 11, Y3, 'g', 'LineWidth', 4)
-% hold off;
-% xlim([-15 15]);
-% xlabel('X Position (mm)');
-% ylabel('Y Position (mm)');
-% title('L8-G3 Velocity Vector Map');
-% ylim([0 28]);
-% y_ticks = 0:2:28;
-% yticks(y_ticks);
-% yticklabels(y_ticks)
-% xline(0, 'k--', 'LineWidth', 2);
+    % for each spatial point in the gas phase
+    for i = 1:length(X2(:))
+        % get the height at this point
+        h = Y2(i);
+        for bin = 1:n_bins
+            if h >= bin_edges(bin) && h < bin_edges(bin+1)
+                bin_data(bin).U2 = [bin_data(bin).U2; U2(i)];
+                bin_data(bin).V2 = [bin_data(bin).V2; V2(i)];
+                bin_data(bin).X2 = [bin_data(bin).X2; X2(i)];
+                bin_data(bin).Y2 = [bin_data(bin).Y2; Y2(i)];
+                break;
+            end
+        end
+    end
+end
+
+%% Verify data collection in bins
+
+fprintf('\nVelocity Data Points Collected in Each Bin:\n');
+for bin = 1:n_bins
+    fprintf('Bin %d (%.2f - %.2f mm):\n', bin, bin_edges(bin), bin_edges(bin+1));
+    fprintf('  Liquid points: %d\n', length(bin_data(bin).X1));
+    fprintf('  Gas points: %d\n', length(bin_data(bin).X2));
+end
