@@ -61,6 +61,24 @@ for bin = 2:length(bin_edges)-1
     xline(bin_edges(bin), 'k:', 'LineWidth', 1.5);
 end
 
+%% Create Storage for velocity fields in each bin
+
+bin_data = struct();
+
+for bin = 1:n_bins
+    bin_data(bin).U1 = [];
+    bin_data(bin).V1 = [];
+    bin_data(bin).X1 = [];
+    bin_data(bin).Y1 = [];
+    
+    bin_data(bin).U2 = [];
+    bin_data(bin).V2 = [];
+    bin_data(bin).X2 = [];
+    bin_data(bin).Y2 = [];
+
+end
+
+%% Populate bins with velocity data based on height conditions
 
 
 
