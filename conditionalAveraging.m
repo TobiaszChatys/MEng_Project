@@ -78,41 +78,21 @@ for bin = 1:n_bins
 
 end
 
+fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
+
 %% Populate bins with velocity data based on height conditions
 
-for frame = 1:frames
-    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, ~, ~] = getData(S, frame);
+fprintf('\nPopulating velocity data into bins based on height conditions...\n');
 
-    % for each spatial point in the liquid phase 
-    for i = 1:length(X1(:))
-        % get the height at this point
-        h = Y1(i);
-        for bin = 1:n_bins
-            if h >= bin_edges(bin) && h < bin_edges(bin+1)
-                bin_data(bin).U1 = [bin_data(bin).U1; U1(i)];
-                bin_data(bin).V1 = [bin_data(bin).V1; V1(i)];
-                bin_data(bin).X1 = [bin_data(bin).X1; X1(i)];
-                bin_data(bin).Y1 = [bin_data(bin).Y1; Y1(i)];
-                break;
-            end
-        end
-    end
+    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame);
 
-    % for each spatial point in the gas phase
-    for i = 1:length(X2(:))
-        % get the height at this point
-        h = Y2(i);
-        for bin = 1:n_bins
-            if h >= bin_edges(bin) && h < bin_edges(bin+1)
-                bin_data(bin).U2 = [bin_data(bin).U2; U2(i)];
-                bin_data(bin).V2 = [bin_data(bin).V2; V2(i)];
-                bin_data(bin).X2 = [bin_data(bin).X2; X2(i)];
-                bin_data(bin).Y2 = [bin_data(bin).Y2; Y2(i)];
-                break;
-            end
-        end
-    end
-end
+    % Interpolate film height to match velocity measurement x-positions
+    
+    % LIQUID PHASE
+    h_at_liquid_points = interp1(X3, Y3, X1(:), 'linear', 'extrap');
+    bin_indices_liquid = discretize(h_at_liquid_points, bin_edges);
+    
+fprintf('\nPopulated velocity data into bins based on height conditions.\n');
 
 %% Verify data collection in bins
 
@@ -122,3 +102,7 @@ for bin = 1:n_bins
     fprintf('  Liquid points: %d\n', length(bin_data(bin).X1));
     fprintf('  Gas points: %d\n', length(bin_data(bin).X2));
 end
+
+
+
+
