@@ -63,12 +63,17 @@ end
 
 bin_data = struct();
 
-bin_data.bin1 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
-bin_data.bin2 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
-bin_data.bin3 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
-bin_data.bin4 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
-bin_data.bin5 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
-bin_data.bin6 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+for bin = 1:n_bins
+    bin_name = sprintf('bin%d', bin);
+    bin_data.(bin_name).U1 = [];  % Each cell = one frame's U1 vectors
+    bin_data.(bin_name).V1 = [];
+    bin_data.(bin_name).X1 = [];
+    bin_data.(bin_name).Y1 = [];
+    bin_data.(bin_name).U2 = [];
+    bin_data.(bin_name).V2 = [];
+    bin_data.(bin_name).X2 = [];
+    bin_data.(bin_name).Y2 = [];
+end
 
 fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 
@@ -143,6 +148,7 @@ for bin = 1:n_bins
     fprintf('  Liquid points: %d\n', length(bin_data(bin).X1));
     fprintf('  Gas points: %d\n', length(bin_data(bin).X2));
 end
+
 
 
 
