@@ -15,14 +15,12 @@ end
 h_max = max(heights);
 h_min = min(heights);
 h_mean = mean(heights);
-h_std = std(heights);
 
 fprintf('Film Height Statistics (All %d Frames):\n', frames);
 fprintf('Total Data Points: %d\n', length(heights));
 fprintf('Max Height: %.2f mm\n', h_max);
 fprintf('Min Height: %.2f mm\n', h_min);
 fprintf('Mean Height: %.2f mm\n', h_mean);
-fprintf('Std Dev of Height: %.2f mm\n', h_std);
 
 %% Create bins for conditional averaging
 
@@ -82,9 +80,10 @@ fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 
 %% Populate bins with velocity data based on height conditions
 
+tic
 fprintf('\nPopulating velocity data into bins based on height conditions...\n');
 
-for frame = 1:10
+for frame = 1:100
     fprintf('Processing frame %d of %d...\n', frame, frames);
     [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame); 
 
@@ -111,6 +110,7 @@ for frame = 1:10
     end
 end 
 
+toc
     
 fprintf('\nPopulated velocity data into bins based on height conditions.\n');
 
