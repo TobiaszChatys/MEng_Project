@@ -84,13 +84,23 @@ fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 
 fprintf('\nPopulating velocity data into bins based on height conditions...\n');
 
-    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame);
+frame = 1
+[U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, ~, Y3] = getData(S, frame); 
 
-    % Interpolate film height to match velocity measurement x-positions
-    
-    % LIQUID PHASE
-    h_at_liquid_points = interp1(X3, Y3, X1(:), 'linear', 'extrap');
-    bin_indices_liquid = discretize(h_at_liquid_points, bin_edges);
+fprintf('liquid velicity points: %d\n', numel(X1));
+fprintf('interface points: %d\n', numel(Y3));
+fprintf('interface height range: %.2f mm to %.2f mm\n', min(Y3), max(Y3));
+
+for point = 1:numel(X1)
+    x_positon = X1(point);
+
+    % find corresponding film height
+    h_local = interp1(X3, Y3, x_positon, 'linear', 'extrap');
+
+    % determine which bin this height falls into
+    bin_index = discretize(h_local, bin_edges);
+end
+
     
 fprintf('\nPopulated velocity data into bins based on height conditions.\n');
 
