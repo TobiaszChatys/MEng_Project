@@ -85,7 +85,7 @@ fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 fprintf('\nPopulating velocity data into bins based on height conditions...\n');
 
 frame = 1
-[U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, ~, Y3] = getData(S, frame); 
+[U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame); 
 
 fprintf('liquid velicity points: %d\n', numel(X1));
 fprintf('interface points: %d\n', numel(Y3));
