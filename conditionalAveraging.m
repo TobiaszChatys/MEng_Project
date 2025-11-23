@@ -87,6 +87,7 @@ for frame = 1:100
     fprintf('Processing frame %d of %d...\n', frame, frames);
     [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame); 
 
+    % air phase
     for point = 1:numel(X1)
         x_positon = X1(point);
 
@@ -104,6 +105,30 @@ for frame = 1:100
                 bin_data(b).V1(end+1,1) = V1(point);
                 bin_data(b).X1(end+1,1) = X1(point);
                 bin_data(b).Y1(end+1,1) = Y1(point);
+                break;
+            end
+        end
+    end
+
+
+    % liquid phase
+    for point = 1:numel(X2)
+        x_positon = X2(point);
+
+        % find corresponding film height
+        h_local = interp1(X3, Y3, x_positon, 'linear', 'extrap');
+
+        % determine which bin this height falls into
+        for b = 1:n_bins
+            lo = bin_edges(b);
+            hi = bin_edges(b+1);
+            in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
+            if in_bin
+                % Append gas vector to this bin
+                bin_data(b).U2(end+1,1) = U2(point);
+                bin_data(b).V2(end+1,1) = V2(point);
+                bin_data(b).X2(end+1,1) = X2(point);
+                bin_data(b).Y2(end+1,1) = Y2(point);
                 break;
             end
         end
