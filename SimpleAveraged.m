@@ -1,6 +1,6 @@
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G9.mat');
+[S, filename] = loadData('L8_G3.mat');
 
 frames = size(S.smoothed_film_height_matrix_out, 2) - 1;
 
@@ -16,13 +16,27 @@ V2_liquid_line = squeeze(S.all_v_matrix_liquid(:, column_index, 1:frames));
 
 
 
-u1_air_mean = mean(U1_air_line, 1, 'omitnan');
-v1_air_mean = mean(V1_air_line, 1, 'omitnan');
-u2_liquid_mean = mean(U2_liquid_line, 1, 'omitnan');
-v2_liquid_mean = mean(V2_liquid_line, 1, 'omitnan');
+u1_air_mean = mean(U1_air_line, 2, 'omitnan');
+v1_air_mean = mean(V1_air_line, 2, 'omitnan');
+u2_liquid_mean = mean(U2_liquid_line, 2, 'omitnan');
+v2_liquid_mean = mean(V2_liquid_line, 2, 'omitnan');
 
 
 mean_air_velocity_magnitude = hypot(u1_air_mean, v1_air_mean);
 mean_liquid_velocity_magnitude = hypot(u2_liquid_mean, v2_liquid_mean);
 
+% get y positions
 
+y_air_line = squeeze(S.all_transposed_y_position_matrix_air(:, column_index, 1)) * 1000;
+y_liquid_line = squeeze(S.all_transposed_y_position_matrix_liquid(:, column_index, 1)) * 1000;
+
+% jplotting the simple time-averaged velocity profiles
+figure;
+plot(mean_air_velocity_magnitude, y_air_line, 'r-', 'LineWidth', 2);
+hold on;
+plot(mean_liquid_velocity_magnitude, y_liquid_line, 'b-', 'LineWidth', 2);
+ylabel('Mean Velocity Magnitude (m/s)');
+xlabel('Y Position (mm)');
+title('Simple Time-Averaged Velocity Profiles at X = 0 mm');
+legend('Air Phase', 'Liquid Phase');
+grid on;
