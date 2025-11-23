@@ -84,35 +84,32 @@ fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 
 fprintf('\nPopulating velocity data into bins based on height conditions...\n');
 
-frame = 1
-[U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame); 
+for frame = 1:10
+    fprintf('Processing frame %d of %d...\n', frame, frames);
+    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame); 
 
-fprintf('liquid velicity points: %d\n', numel(X1));
-fprintf('interface points: %d\n', numel(Y3));
-fprintf('interface height range: %.2f mm to %.2f mm\n', min(Y3), max(Y3));
+    for point = 1:numel(X1)
+        x_positon = X1(point);
 
-for point = 1:numel(X1)
-    x_positon = X1(point);
+        % find corresponding film height
+        h_local = interp1(X3, Y3, x_positon, 'linear', 'extrap');
 
-    % find corresponding film height
-    h_local = interp1(X3, Y3, x_positon, 'linear', 'extrap');
-
-    % determine which bin this height falls into
-    for b = 1:n_bins
-        lo = bin_edges(b);
-        hi = bin_edges(b+1);
-        in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
-        if in_bin
-            % Append liquid vector to this bin
-            bin_data(b).U1(end+1,1) = U1(point);
-            bin_data(b).V1(end+1,1) = V1(point);
-            bin_data(b).X1(end+1,1) = X1(point);
-            bin_data(b).Y1(end+1,1) = Y1(point);
-            break;
+        % determine which bin this height falls into
+        for b = 1:n_bins
+            lo = bin_edges(b);
+            hi = bin_edges(b+1);
+            in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
+            if in_bin
+                % Append liquid vector to this bin
+                bin_data(b).U1(end+1,1) = U1(point);
+                bin_data(b).V1(end+1,1) = V1(point);
+                bin_data(b).X1(end+1,1) = X1(point);
+                bin_data(b).Y1(end+1,1) = Y1(point);
+                break;
+            end
         end
     end
-end
-
+end 
 
     
 fprintf('\nPopulated velocity data into bins based on height conditions.\n');
