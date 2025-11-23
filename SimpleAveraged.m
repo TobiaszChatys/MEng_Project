@@ -3,6 +3,7 @@ clc; clear; close all;
 [S, filename] = loadData('L8_G9.mat');
 frames = size(S.smoothed_film_height_matrix_out, 2) - 1;
 
+
 % initalise storage for accumulated data
 
 % air phase
@@ -25,6 +26,9 @@ X3_all = [];
 Y3_all = [];
 
 for frame = 1:frames
+
+    [U1, V1, X1, Y1, U2, V2, X2, Y2, ~, ~, X3, Y3] = getData(S, frame);
+
     U1_all = [U1_all; U1(:)];
     V1_all = [V1_all; V1(:)];
     X1_all = [X1_all; X1(:)];
