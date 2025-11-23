@@ -98,8 +98,21 @@ for point = 1:numel(X1)
     h_local = interp1(X3, Y3, x_positon, 'linear', 'extrap');
 
     % determine which bin this height falls into
-    bin_index = discretize(h_local, bin_edges);
+    for b = 1:n_bins
+        lo = bin_edges(b);
+        hi = bin_edges(b+1);
+        in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
+        if in_bin
+            % Append liquid vector to this bin
+            bin_data(b).U1(end+1,1) = U1(point);
+            bin_data(b).V1(end+1,1) = V1(point);
+            bin_data(b).X1(end+1,1) = X1(point);
+            bin_data(b).Y1(end+1,1) = Y1(point);
+            break;
+        end
+    end
 end
+
 
     
 fprintf('\nPopulated velocity data into bins based on height conditions.\n');
