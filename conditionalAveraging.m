@@ -63,18 +63,12 @@ end
 
 bin_data = struct();
 
-for bin = 1:n_bins
-    bin_data(bin).U1 = [];
-    bin_data(bin).V1 = [];
-    bin_data(bin).X1 = [];
-    bin_data(bin).Y1 = [];
-    
-    bin_data(bin).U2 = [];
-    bin_data(bin).V2 = [];
-    bin_data(bin).X2 = [];
-    bin_data(bin).Y2 = [];
-
-end
+bin_data.bin1 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+bin_data.bin2 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+bin_data.bin3 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+bin_data.bin4 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+bin_data.bin5 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
+bin_data.bin6 = struct('U1', [], 'V1', [], 'X1', [], 'Y1', [], 'U2', [], 'V2', [], 'X2', [], 'Y2', []);
 
 fprintf('\nInitialized storage for velocity data in %d bins.\n', n_bins);
 
@@ -100,11 +94,12 @@ for frame = 1:100
             hi = bin_edges(b+1);
             in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
             if in_bin
+                bin_name = sprintf('bin%d', b);
                 % Append liquid vector to this bin
-                bin_data(b).U1(end+1,1) = U1(point);
-                bin_data(b).V1(end+1,1) = V1(point);
-                bin_data(b).X1(end+1,1) = X1(point);
-                bin_data(b).Y1(end+1,1) = Y1(point);
+                bin_data.(bin_name).U1(end+1,1) = U1(point);
+                bin_data.(bin_name).V1(end+1,1) = V1(point);
+                bin_data.(bin_name).X1(end+1,1) = X1(point);
+                bin_data.(bin_name).Y1(end+1,1) = Y1(point);
                 break;
             end
         end
@@ -124,11 +119,12 @@ for frame = 1:100
             hi = bin_edges(b+1);
             in_bin = (h_local >= lo) && (h_local < hi || (b == n_bins && h_local <= hi));
             if in_bin
+                bin_name = sprintf('bin%d', b);
                 % Append gas vector to this bin
-                bin_data(b).U2(end+1,1) = U2(point);
-                bin_data(b).V2(end+1,1) = V2(point);
-                bin_data(b).X2(end+1,1) = X2(point);
-                bin_data(b).Y2(end+1,1) = Y2(point);
+                bin_data.(bin_name).U2(end+1,1) = U2(point);
+                bin_data.(bin_name).V2(end+1,1) = V2(point);
+                bin_data.(bin_name).X2(end+1,1) = X2(point);
+                bin_data.(bin_name).Y2(end+1,1) = Y2(point);
                 break;
             end
         end
