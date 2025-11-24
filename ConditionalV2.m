@@ -36,10 +36,53 @@ end
 
 % create storage for vertical velocity data in each bin
 
-bin_data = struct( ...
+bin_data = repmat(struct( ...
     "U1", [], ...
     "V1", [], ...    
     "U2", [], ...
     "V2", [] ...
-);
+), n_bins, 1);
 
+Y_profile = []; % store vertical positions
+
+% populate bins with vertical profiles based on film height
+
+tic
+for frame = 1:frames
+    [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+
+    [Ny1, Nx1] = size(U1);
+    X_air_columns = X1(1, :);
+
+    if isempty(Y_profile)
+        Y_profile = Y1(:, 1); % storing once since y is consistent across x 
+    end
+    
+    % air phase
+    for col = 1:Nx1
+        x_pos = X_air_columns(col);
+    end
+
+    % local film height at this frame
+    local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
+    if isnan(local_film_height)
+        continue; % skip if no valid film height
+    end
+    % determine bin
+    bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
+
+    if isempty(bin_index) && local_film_height == bin_edges(end)
+        bin_index = n_bins; % assign to last bin if equal to max edge
+    elseif isempty(bin_index)
+        continue; % skip if no bin found
+    end
+
+    % extract vertical profile for this column
+    U1_column = U1(:, col);
+    V1_column = V1(:, col);
+
+    % append as new column in chosen bin
+    bin_data(bin_index).U1 = [bin_data(bin_index).U1, U1_column];
+    bin_data(bin_index).V1 = [bin_data(bin_index).V1, V1_column];
+end 
+toc
