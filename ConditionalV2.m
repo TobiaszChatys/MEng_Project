@@ -15,12 +15,14 @@ end
 h_max = max(heights);
 h_min = min(heights);
 h_mean = mean(heights);
+h_mode = mode(heights);
 
 fprintf('Film Height Statistics (All %d Frames):\n', frames);
 fprintf('Total Data Points: %d\n', length(heights));
 fprintf('Max Height: %.2f mm\n', h_max);
 fprintf('Min Height: %.2f mm\n', h_min);
 fprintf('Mean Height: %.2f mm\n', h_mean);
+fprintf('Mode Height: %.2f mm\n', h_mode);
 
 bin_edges = [h_min, 1.0, 1.5, 2.0, 2.5, 3.5, h_max];
 n_bins = length(bin_edges) - 1;
@@ -43,12 +45,13 @@ bin_data = repmat(struct( ...
     "V2", [] ...
 ), n_bins, 1);
 
-Y_profile = []; % store vertical positions
+Y_profile1 = []; % store vertical positions
+Y_profile2 = []; % store vertical positions
 
 % populate bins with vertical profiles based on film height
 
 tic
-for frame = 1:1000
+for frame = 1:frames
 
     fprintf('Processing frame %d / %d\r', frame, frames);
     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
@@ -56,8 +59,9 @@ for frame = 1:1000
     [Ny1, Nx1] = size(U1);
     X_air_columns = X1(1, :);
 
-    if isempty(Y_profile)
-        Y_profile = Y1(:, 1); % storing once since y is consistent across x 
+    if isempty(Y_profile1)
+        Y_profile1 = Y1(:, 1); % storing once since y is consistent across x 
+        Y_profile2 = Y2(:, 1);
     end
     
     % air phase
@@ -141,3 +145,11 @@ for bin = 1:n_bins
 end
 
 fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
+
+%% Plotting conditional mean profiles for each bin
+
+figure;
+bin = 6; % example bin to plot
+plot(conditional_means(bin).U1_mean, Y_profile1, 'r-', 'LineWidth', 2);
+hold on;
+plot(conditional_means(bin).U2_mean, Y_profile2, 'b-', 'LineWidth', 2);
