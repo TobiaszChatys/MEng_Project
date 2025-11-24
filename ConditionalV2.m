@@ -118,3 +118,26 @@ for frame = 1:1000
     end 
 end 
 toc
+
+% compute conditonal mean profiles for each bin
+
+conditional_means = repmat(struct( ...
+    "U1_mean", [], ...
+    "V1_mean", [], ...
+    "U2_mean", [], ...
+    "V2_mean", [] ...
+), n_bins, 1);
+
+for bin = 1:n_bins
+    if ~isempty(bin_data(bin).U1)
+        conditional_means(bin).U1_mean = mean(bin_data(bin).U1, 2, 'omitnan');
+        conditional_means(bin).V1_mean = mean(bin_data(bin).V1, 2, 'omitnan');
+    end
+
+    if ~isempty(bin_data(bin).U2)
+        conditional_means(bin).U2_mean = mean(bin_data(bin).U2, 2, 'omitnan');
+        conditional_means(bin).V2_mean = mean(bin_data(bin).V2, 2, 'omitnan');
+    end
+end
+
+fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
