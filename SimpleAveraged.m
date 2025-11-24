@@ -1,8 +1,8 @@
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G3.mat');
+[S, filename] = loadData('L8_G9.mat');
 
-frames = size(S.smoothed_film_height_matrix_out, 2) - 1;
+frames = size(S.all_u_matrix_liquid, 3);
 
 
 % picking a fixed column to perform simple time-averaging on
@@ -35,8 +35,8 @@ figure;
 plot(mean_air_velocity_magnitude, y_air_line, 'r-', 'LineWidth', 2);
 hold on;
 plot(mean_liquid_velocity_magnitude, y_liquid_line, 'b-', 'LineWidth', 2);
-ylabel('Mean Velocity Magnitude (m/s)');
-xlabel('Y Position (mm)');
+ylabel('Y Position (mm)');
+xlabel('Mean Velocity Magnitude');
 title('Simple Time-Averaged Velocity Profiles at X = 0 mm');
 legend('Air Phase', 'Liquid Phase');
 grid on;
