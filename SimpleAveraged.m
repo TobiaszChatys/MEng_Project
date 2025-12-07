@@ -10,10 +10,20 @@ column_index = 25;
 
 % limit data to valid index:
 U1_air_line = squeeze(S.all_u_matrix_air(:, column_index, 1:frames));
-U2_liquid_line = squeeze(S.all_u_matrix_liquid(:, column_index, 1:frames));
 V1_air_line = squeeze(S.all_v_matrix_air(:, column_index, 1:frames));
+
+% Set zero velocities to NaN
+zero_mask = (U1_air_line == 0) & (V1_air_line == 0);
+U1_air_line(zero_mask) = NaN;
+V1_air_line(zero_mask) = NaN;
+
+U2_liquid_line = squeeze(S.all_u_matrix_liquid(:, column_index, 1:frames));
 V2_liquid_line = squeeze(S.all_v_matrix_liquid(:, column_index, 1:frames));
 
+% Set zero velocities to NaN
+zero_mask = (U2_liquid_line == 0) & (V2_liquid_line == 0);
+U2_liquid_line(zero_mask) = NaN;
+V2_liquid_line(zero_mask) = NaN;
 
 
 u1_air_mean = mean(U1_air_line, 2, 'omitnan');

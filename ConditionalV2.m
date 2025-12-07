@@ -61,7 +61,7 @@ Y_profile_liquid = Y2(:,1); % store liquid vertical positions
 
 tic
 
-for frame = 1:frames
+for frame = 1:200
 
     fprintf('Processing frame %d / %d\r', frame, frames);
     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
@@ -152,12 +152,12 @@ fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
 %% Plotting conditional mean profiles for each bin
 
 figure;
-bin = 6; % example bin to plot
+bin = 1; % example bin to plot
 plot(conditional_means(bin).U1_mean, Y_profile_air, 'r-', 'LineWidth', 2);
 hold on;
 plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'b-', 'LineWidth', 2);
 ylabel('Y Position (mm)');
 xlabel('Mean Velocity Magnitude');
-title('conditonal average bin 6');
+title('conditonal average bin 1');
 legend('Air Phase', 'Liquid Phase');
 grid on;

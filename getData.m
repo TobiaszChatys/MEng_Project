@@ -10,6 +10,12 @@ function [X1, Y1, U1, V1, Z1] = getAirData(S, frame)
     Y1 = S.all_transposed_y_position_matrix_air(:, :, frame) * 1e3;
     U1 = S.all_u_matrix_air(:, :, frame);
     V1 = S.all_v_matrix_air(:, :, frame);
+
+    % Set zero velocities to NaN
+    zero_mask = (U1 == 0) & (V1 == 0);
+    U1(zero_mask) = NaN;
+    V1(zero_mask) = NaN;
+
     Z1 = hypot(U1, V1);
 end
 
@@ -18,6 +24,12 @@ function [X2, Y2, U2, V2, Z2] = getLiquidData(S, frame)
     Y2 = S.all_transposed_y_position_matrix_liquid(:, :, frame) * 1e3;
     U2 = S.all_u_matrix_liquid(:, :, frame);
     V2 = S.all_v_matrix_liquid(:, :, frame);
+
+    % Set zero velocities to NaN
+    zero_mask = (U2 == 0) & (V2 == 0);
+    U2(zero_mask) = NaN;
+    V2(zero_mask) = NaN;
+
     Z2 = hypot(U2, V2);
 end
 
