@@ -1,6 +1,6 @@
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G9.mat'); 
+[S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 [
@@ -30,9 +30,27 @@ fprintf('Min Height: %.2f mm\n', film_min_height);
 fprintf('Mean Height: %.2f mm\n', film_mean_height);
 fprintf('Mode Height: %.2f mm\n', film_mode_height);
 
-bin_edges = [film_min_height, 1.0, 1.5, 2.0, 2.5, 3.5, film_max_height];
+% Define bins using percentiles
+film_p25 = prctile(all_film_heights, 25);
+film_p75 = prctile(all_film_heights, 75);
+film_median = median(all_film_heights);
+
+% Create bin edges using percentiles as outer boundaries
+% You can adjust the number of bins and how they're distributed
+bin_edges = [
+    film_min_height,  % minimum
+    film_p25,         % 25th percentile
+    film_median,      % 50th percentile (median)
+    film_p75,         % 75th percentile
+    film_max_height   % maximum
+];
+
 number_of_bins = length(bin_edges) - 1;
 
+fprintf('\nPercentile-based Bin Edges:\n');
+fprintf('25th percentile: %.2f mm\n', film_p25);
+fprintf('50th percentile (median): %.2f mm\n', film_median);
+fprintf('75th percentile: %.2f mm\n', film_p75);
 % count data points in each bin
 bin_counts = zeros(number_of_bins, 1);
 fprintf('\nData Points in Each Bin:\n');
@@ -61,7 +79,7 @@ Y_profile_liquid = Y2(:,1); % store liquid vertical positions
 
 tic
 
-for frame = 1:200
+for frame = 1:frames
 
     fprintf('Processing frame %d / %d\r', frame, frames);
     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
@@ -161,3 +179,338 @@ xlabel('Mean Velocity Magnitude');
 title('conditonal average bin 1');
 legend('Air Phase', 'Liquid Phase');
 grid on;
+
+%% Define plotting styles for each bin
+
+% Same markers for both phases
+markers = {'s', 'o', '^', 'd'};
+
+% Rose Pine colors - darker shades for light mode visibility
+% Each bin gets one color used for both air (hollow) and liquid (filled)
+colors = [
+    0.85, 0.52, 0.60;  % rose (darker)
+    0.90, 0.77, 0.53;  % gold (darker)
+    0.76, 0.56, 0.78;  % iris
+    0.56, 0.73, 0.78   % foam
+];
+
+%% Plotting all bins overlaid - LOG SCALE
+
+figure('Position', [100, 100, 900, 600]);
+hold on;
+
+% Plot air phase for all bins (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U1_mean) 
+    semilogx(conditional_means(bin).U1_mean, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase for all bins (filled markers)
+% Create percentile labels for legend
+percentile_labels = {'Bin 1: 0-25th', 'Bin 2: 25th-50th', 'Bin 3: 50th-75th', 'Bin 4: 75th-100th'};
+
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U2_mean)
+    semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 'FontSize', 14);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
+%% Calculate velocity fluctuations for each bin
+
+fluctuation_data = repmat(struct( ...
+    "U1_prime", [], ...
+    "V1_prime", [], ...
+    "U2_prime", [], ...
+    "V2_prime", [] ...
+), number_of_bins, 1);
+
+fprintf('\nCalculating velocity fluctuations for each bin...\n');
+
+for bin = 1:number_of_bins
+    % Air phase fluctuations
+    if ~isempty(bin_data(bin).U1)
+        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+        fluctuation_data(bin).U1_prime = bin_data(bin).U1 - conditional_means(bin).U1_mean;
+        fluctuation_data(bin).V1_prime = bin_data(bin).V1 - conditional_means(bin).V1_mean;
+        
+        fprintf('Bin %d Air: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U1, 2));
+    end
+    
+    % Liquid phase fluctuations
+    if ~isempty(bin_data(bin).U2)
+        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+        fluctuation_data(bin).U2_prime = bin_data(bin).U2 - conditional_means(bin).U2_mean;
+        fluctuation_data(bin).V2_prime = bin_data(bin).V2 - conditional_means(bin).V2_mean;
+        
+        fprintf('Bin %d Liquid: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U2, 2));
+    end
+end
+
+%% Calculate RMS (root mean square) of fluctuations
+
+rms_fluctuations = repmat(struct( ...
+    "U1_rms", [], ...
+    "V1_rms", [], ...
+    "U2_rms", [], ...
+    "V2_rms", [] ...
+), number_of_bins, 1);
+
+for bin = 1:number_of_bins
+    % Air phase RMS
+    if ~isempty(fluctuation_data(bin).U1_prime)
+        rms_fluctuations(bin).U1_rms = sqrt(mean(fluctuation_data(bin).U1_prime.^2, 2, 'omitnan'));
+        rms_fluctuations(bin).V1_rms = sqrt(mean(fluctuation_data(bin).V1_prime.^2, 2, 'omitnan'));
+    end
+    
+    % Liquid phase RMS
+    if ~isempty(fluctuation_data(bin).U2_prime)
+        rms_fluctuations(bin).U2_rms = sqrt(mean(fluctuation_data(bin).U2_prime.^2, 2, 'omitnan'));
+        rms_fluctuations(bin).V2_rms = sqrt(mean(fluctuation_data(bin).V2_prime.^2, 2, 'omitnan'));
+    end
+end
+
+fprintf('\nComputed RMS fluctuations for all bins.\n');
+
+%% Plot RMS velocity fluctuations - LOG SCALE
+
+figure('Position', [100, 100, 900, 600]);
+hold on;
+
+% Plot air phase RMS fluctuations (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U1_rms) 
+    semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase RMS fluctuations (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+    semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('RMS Velocity Fluctuation (log scale)', 'FontSize', 12);
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title('RMS Velocity Fluctuations - All Bins Overlaid', 'FontSize', 14);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
+%% Calculate turbulence intensity for each bin
+
+turbulence_intensity = repmat(struct( ...
+    "U1_TI", [], ...
+    "V1_TI", [], ...
+    "U2_TI", [], ...
+    "V2_TI", [] ...
+), number_of_bins, 1);
+
+fprintf('\nCalculating turbulence intensity for each bin...\n');
+
+for bin = 1:number_of_bins
+    % Air phase turbulence intensity
+    if ~isempty(rms_fluctuations(bin).U1_rms)
+        % TI = RMS / mean velocity
+        turbulence_intensity(bin).U1_TI = rms_fluctuations(bin).U1_rms ./ abs(conditional_means(bin).U1_mean);
+        turbulence_intensity(bin).V1_TI = rms_fluctuations(bin).V1_rms ./ abs(conditional_means(bin).V1_mean);
+        
+        fprintf('Bin %d Air: Turbulence intensity calculated\n', bin);
+    end
+    
+    % Liquid phase turbulence intensity
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+        % TI = RMS / mean velocity
+        turbulence_intensity(bin).U2_TI = rms_fluctuations(bin).U2_rms ./ abs(conditional_means(bin).U2_mean);
+        turbulence_intensity(bin).V2_TI = rms_fluctuations(bin).V2_rms ./ abs(conditional_means(bin).V2_mean);
+        
+        fprintf('Bin %d Liquid: Turbulence intensity calculated\n', bin);
+    end
+end
+
+fprintf('\nComputed turbulence intensity for all bins.\n');
+
+%% Plot turbulence intensity
+
+figure('Position', [100, 100, 900, 600]);
+hold on;
+
+% Plot air phase turbulence intensity (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(turbulence_intensity(bin).U1_TI) 
+    semilogx(turbulence_intensity(bin).U1_TI, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase turbulence intensity (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(turbulence_intensity(bin).U2_TI)
+    semilogx(turbulence_intensity(bin).U2_TI, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('Turbulence Intensity (u_{rms} / U_{mean})', 'FontSize', 12);
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title('Turbulence Intensity - All Bins Overlaid', 'FontSize', 14);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+%% Plot Mean Velocity, RMS Fluctuations, and Turbulence Intensity side by side
+
+figure;
+
+% First subplot: Mean Velocity
+subplot(1, 3, 1);
+hold on;
+
+% Plot air phase for all bins (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U1_mean) 
+    semilogx(conditional_means(bin).U1_mean, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase for all bins (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U2_mean)
+    semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+xlim([0.01, 50]);
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50]);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
+% Second subplot: RMS Fluctuations
+subplot(1, 3, 2);
+hold on;
+
+% Plot air phase RMS fluctuations (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U1_rms) 
+    semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase RMS fluctuations (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+    semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+xlim([0.01, 10]);
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50]);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
+% Third subplot: Turbulence Intensity
+subplot(1, 3, 3);
+hold on;
+
+% Plot air phase turbulence intensity (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(turbulence_intensity(bin).U1_TI) 
+    semilogx(turbulence_intensity(bin).U1_TI, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
+        'HandleVisibility', 'off');
+    end
+end
+
+% Plot liquid phase turbulence intensity (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(turbulence_intensity(bin).U2_TI)
+    semilogx(turbulence_intensity(bin).U2_TI, Y_profile_liquid, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 1, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'DisplayName', percentile_labels{bin});
+    end
+end
+
+set(gca, 'XScale', 'log');
+xlim([0.01, 10]);
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('$I = \frac{u''_{(x_0,y),rms}}{\overline{u}_{(x_0,y)}}$', 'FontSize', 12, 'Interpreter', 'latex');
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50]);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
