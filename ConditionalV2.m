@@ -194,10 +194,10 @@ colors = [
 ];
 
 percentile_labels = {
-    sprintf('%.2f-%.2f mm', bin_edges(1), bin_edges(2)), ...
-    sprintf('%.2f-%.2f mm', bin_edges(2), bin_edges(3)), ...
-    sprintf('%.2f-%.2f mm', bin_edges(3), bin_edges(4)), ...
-    sprintf('%.2f-%.2f mm', bin_edges(4), bin_edges(5))
+    sprintf('%.2f - %.2f mm', bin_edges(1), bin_edges(2)), ...
+    sprintf('%.2f - %.2f mm', bin_edges(2), bin_edges(3)), ...
+    sprintf('%.2f - %.2f mm', bin_edges(3), bin_edges(4)), ...
+    sprintf('%.2f - %.2f mm', bin_edges(4), bin_edges(5))
 };
 
 %% Plotting all bins overlaid - LOG SCALE
@@ -205,30 +205,35 @@ percentile_labels = {
 figure('Position', [100, 100, 900, 600]);
 hold on;
 
-% Plot air phase for all bins (filled markers)
-for bin = 1:number_of_bins
-    if ~isempty(conditional_means(bin).U1_mean) 
-    semilogx(conditional_means(bin).U1_mean, Y_profile_air, ...
-        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
-        'LineWidth', 2, 'MarkerSize', 6, ...
-        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
-        'HandleVisibility', 'off');
-    end
-end
-
 % Plot liquid phase for all bins (hollow markers)
-% Create percentile labels for legend
 
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U2_mean)
     semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, ...
         'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
         'LineWidth', 1, 'MarkerSize', 6, ...
-        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', 'none', ...
         'DisplayName', percentile_labels{bin});
     end
 end
 
+% Plot air phase for all bins (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U1_mean) 
+    semilogx(conditional_means(bin).U1_mean, Y_profile_air, ...
+        'Color', colors(bin, :), 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'LineWidth', 2, 'MarkerSize', 6, ...
+        'MarkerEdgeColor', colors(bin, :), 'MarkerFaceColor', colors(bin, :), ...
+        'HandleVisibility', 'off');
+    end
+end
+
+
+% horizontal reference line at bin edges
+
+for bin = 2:number_of_bins
+    yline(bin_edges(bin), 'k--', 'LineWidth', 1.5, 'HandleVisibility', 'off');
+end
 set(gca, 'XScale', 'log');
 ylabel('Y Position (mm)', 'FontSize', 12);
 xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
