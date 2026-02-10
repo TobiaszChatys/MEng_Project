@@ -53,18 +53,14 @@ xline(0, 'k--', 'LineWidth', 2);
 
 %% Velocity Vectors in range of film heights
 
-Sample_frame = 10;
+Sample_frame = 40;
 
 [~, Y1, ~, ~, ~, ~, Y2, ~, ~, ~, ~, Y3] = getData(S, Sample_frame);
 
-yrows_air = unique(Y1(:, 1));
 yrows_liquid = unique(Y2(:, 1));
 
-air_count = sum(yrows_air >= min_film_height & yrows_air <= max_film_height);
 liquid_count = sum(yrows_liquid >= min_film_height & yrows_liquid <= max_film_height);
-total_rows = air_count + liquid_count;
-fprintf('Number of rows in the air region within the film height range: %d\n', air_count);
-fprintf('Number of rows in the liquid region within the film height range: %d\n', liquid_count);
-fprintf('Total number of rows within the film height range: %d\n', total_rows);
 
+fprintf('Number of rows in the liquid region within the film height range: %d\n', liquid_count);
+fprintf('Total number of rows within the film height range: %d\n', liquid_count);
 
