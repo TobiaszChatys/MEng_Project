@@ -2,7 +2,7 @@
 clc; clear; close all;
 
 [S, filename] = loadData('L8_G3.mat'); 
-frames = 1000; %size(S.all_u_matrix_liquid, 3);
+frames = size(S.all_u_matrix_liquid, 3);
 
 
 %% compute Film height stats
@@ -90,69 +90,107 @@ Y_profile_liquid = Y2(:,1); % store liquid vertical positions
 [number_of_yair, number_of_xair] = size(U1); % getting dimensions
 [number_of_yliquid, number_of_xliquid] = size(U2);
 
-%% populate bins with vertical profiles based on film height
+%% populate bins with vertical profiles based on film height (parallel)
 
 tic
-for frame = 1:frames
 
-    fprintf('Processing frame %d / %d\r', frame, frames);
+% Temporary per-frame, per-bin storage for parfor (cells are parfor-safe)
+temp_U1 = cell(frames, number_of_bins);
+temp_V1 = cell(frames, number_of_bins);
+temp_U2 = cell(frames, number_of_bins);
+temp_V2 = cell(frames, number_of_bins);
+
+parfor frame = 1:frames
+    fprintf('Processing frame %d/%d...\n', frame, frames);
     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
 
     X_air_columns = X1(1, :);
     X_liquid_columns = X2(1, :);
 
+    % per-frame bin containers
+    frame_U1 = cell(1, number_of_bins);
+    frame_V1 = cell(1, number_of_bins);
+    frame_U2 = cell(1, number_of_bins);
+    frame_V2 = cell(1, number_of_bins);
+
     % air phase
-    for column = 1:number_of_xair
-        
+    for column = 1:numel(X_air_columns)
         x_pos = X_air_columns(column);
-        % local film height at this frame
         local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
         if isnan(local_film_height)
-            continue; % skip if no valid film height
+            continue;
         end
-        % determine bin
         bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
-
         if isempty(bin_index) && local_film_height == bin_edges(end)
-            bin_index = n_bins; % assign to last bin if equal to max edge
+            bin_index = number_of_bins; % assign to last bin if equal to max edge
         elseif isempty(bin_index)
-            continue; % skip if no bin found
+            continue;
         end
 
-        % extract vertical profile for this column
         U1_column = U1(:, column);
         V1_column = V1(:, column);
 
-        % append as new column in chosen bin
-        bin_data(bin_index).U1 = [bin_data(bin_index).U1, U1_column];
-        bin_data(bin_index).V1 = [bin_data(bin_index).V1, V1_column];
+        if isempty(frame_U1{bin_index})
+            frame_U1{bin_index} = U1_column;
+            frame_V1{bin_index} = V1_column;
+        else
+            frame_U1{bin_index} = [frame_U1{bin_index}, U1_column];
+            frame_V1{bin_index} = [frame_V1{bin_index}, V1_column];
+        end
     end
 
     % liquid phase
-    for column = 1:number_of_xliquid
+    for column = 1:numel(X_liquid_columns)
         x_pos = X_liquid_columns(column);
-
-        % local film height at this frame
         local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
         if isnan(local_film_height)
-            continue; % skip if no valid film height
+            continue;
         end
-        % determine bin
         bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
-
         if isempty(bin_index) && local_film_height == bin_edges(end)
-            bin_index = n_bins; % assign to last bin if equal to max edge
+            bin_index = number_of_bins; % assign to last bin if equal to max edge
         elseif isempty(bin_index)
-            continue; % skip if no bin found
+            continue;
         end
 
-        % extract vertical profile for this column
         U2_column = U2(:, column);
         V2_column = V2(:, column);
 
-        % append as new column in chosen bin
-        bin_data(bin_index).U2 = [bin_data(bin_index).U2, U2_column];
-        bin_data(bin_index).V2 = [bin_data(bin_index).V2, V2_column];
+        if isempty(frame_U2{bin_index})
+            frame_U2{bin_index} = U2_column;
+            frame_V2{bin_index} = V2_column;
+        else
+            frame_U2{bin_index} = [frame_U2{bin_index}, U2_column];
+            frame_V2{bin_index} = [frame_V2{bin_index}, V2_column];
+        end
+    end
+
+    % write per-frame results into temp arrays (sliced by frame)
+    for b = 1:number_of_bins
+        temp_U1{frame, b} = frame_U1{b};
+        temp_V1{frame, b} = frame_V1{b};
+        temp_U2{frame, b} = frame_U2{b};
+        temp_V2{frame, b} = frame_V2{b};
+    end
+end
+
+% aggregate per-frame results into bin_data
+for b = 1:number_of_bins
+
+    fprintf('Aggregating data for bin %d/%d...\n', b, number_of_bins);
+    for f = 1:frames
+        if ~isempty(temp_U1{f, b})
+            bin_data(b).U1 = [bin_data(b).U1, temp_U1{f, b}];
+        end
+        if ~isempty(temp_V1{f, b})
+            bin_data(b).V1 = [bin_data(b).V1, temp_V1{f, b}];
+        end
+        if ~isempty(temp_U2{f, b})
+            bin_data(b).U2 = [bin_data(b).U2, temp_U2{f, b}];
+        end
+        if ~isempty(temp_V2{f, b})
+            bin_data(b).V2 = [bin_data(b).V2, temp_V2{f, b}];
+        end
     end
 end
 
