@@ -1,12 +1,7 @@
 clc; clear; close all;
 
-<<<<<<< HEAD
 [S, filename] = loadData('L8_G9.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
-=======
-[S, filename] = loadData('L8_G3.mat'); 
-frames = 500; % size(S.all_u_matrix_liquid, 3);
->>>>>>> 0373e09 (updated)
 
 [
 X1, Y1, U1, V1, Z1, ... % air phase 

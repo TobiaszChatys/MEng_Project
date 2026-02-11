@@ -30,7 +30,7 @@ fprintf('Mean Film Height: %.2f mm\n', mean_film_height);
 
 Sample_frame = 40;
 
-[~, Y1, ~, ~, ~, ~, Y2, ~, ~, ~, ~, Y3] = getData(S, Sample_frame);
+[~, ~, ~, ~, ~, ~, Y2, ~, ~, ~, ~, ~] = getData(S, Sample_frame);
 
 yrows_liquid = unique(Y2(:, 1));
 
@@ -43,18 +43,8 @@ fprintf('Total number of rows within the film height range: %d\n', liquid_count)
 % since we have 31 vectors inbetween the min and max film heights, we can determine the number of bins
 
 %% Binning
-bin_edges = linspace(min_film_height, max_film_height, 8);
-fprintf('Bin edges for film height range: %s\n', mat2str(bin_edges));
-
-number_of_bins = length(bin_edges) - 1;
-
-for bin = 1:number_of_bins
-    bin_counts(bin) = sum(all_film_heights >= bin_edges(bin) & all_film_heights < bin_edges(bin+1));
-    fprintf('Bin %d (%.2f - %.2f mm): %d data points\n', bin, bin_edges(bin), bin_edges(bin+1), bin_counts(bin));
-end
-
-
-
+number_of_bins = 8;
+bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
 %% plotting
 
 frame = 10;
@@ -84,46 +74,48 @@ yticks(y_ticks);
 yticklabels(y_ticks)
 xline(0, 'k--', 'LineWidth', 2);
 
-%% Storage for binning results
+% Expected data points in each bin
 
-temp_U1_cell = cell(1, number_of_bins);
-temp_V1_cell = cell(1, number_of_bins);
-temp_U2_cell = cell(1, number_of_bins);
-temp_V2_cell = cell(1, number_of_bins);
+% %% Storage for binning results
 
-bin_edges_local = bin_edges; % Store bin edges in a local variable for use in parfor loop
-number_of_bins_local = number_of_bins; % Store number of bins in a local variable for use in parfor loop
-%% Binning velocity vectors based on film height
+% temp_U1_cell = cell(frames, number_of_bins);
+% temp_V1_cell = cell(frames, number_of_bins);
+% temp_U2_cell = cell(frames, number_of_bins);
+% temp_V2_cell = cell(frames, number_of_bins);
 
-tic
-parfor frame = 1:frames
+% bin_edges_local = bin_edges; % Store bin edges in a local variable for use in parfor loop
+% number_of_bins_local = number_of_bins; % Store number of bins in a local variable for use in parfor loop
+% %% Binning velocity vectors based on film height
 
-    [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+% tic
+% parfor frame = 1:frames
+
+%     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
     
-    x_air_columns = X1(1, :);
-    y_liquid_columns = Y2(1, :);
+%     x_air_columns = X1(1, :);
+%     y_liquid_columns = Y2(1, :);
 
-    % Temporary storage for current frame's binned data
-    frame_U1_bins = cell(number_of_bins_local, 1);
-    frame_V1_bins = cell(number_of_bins_local, 1);
+%     % Temporary storage for current frame's binned data
+%     frame_U1_bins = cell(number_of_bins_local, 1);
+%     frame_V1_bins = cell(number_of_bins_local, 1);
 
 
-    % Air phase 
+%     % Air phase 
 
-    for column = 1:numel(x_air_columns)
-        x_position = x_air_columns(column);
-        film_height_at_column = interp1(X3, Y3, x_position, 'linear', 'extrap'); % Get film height at this x position
-        bin_index = find(film_height_at_column >= bin_edges_local(1:end-1) & film_height_at_column < bin_edges_local(2:end), 1);
-        if ~isempty(bin_index)
-            frame_U1_bins{bin_index} = [frame_U1_bins{bin_index}; U1(:, column)];
-            frame_V1_bins{bin_index} = [frame_V1_bins{bin_index}; V1(:, column)];
-        end
-    end
+%     for column = 1:numel(x_air_columns)
+%         x_position = x_air_columns(column);
+%         film_height_at_column = interp1(X3, Y3, x_position, 'linear', 'extrap'); % Get film height at this x position
+%         bin_index = find(film_height_at_column >= bin_edges_local(1:end-1) & film_height_at_column < bin_edges_local(2:end), 1);
+%         if ~isempty(bin_index)
+%             frame_U1_bins{bin_index} = [frame_U1_bins{bin_index}; U1(:, column)];
+%             frame_V1_bins{bin_index} = [frame_V1_bins{bin_index}; V1(:, column)];
+%         end
+%     end
 
-    for b = 1:number_of_bins_local
-        temp_U1{frame, b} = frame_U1_bins{b};
-        temp_V1{frame, b} = frame_V1_bins{b};
-    end 
+%     for b = 1:number_of_bins_local
+%         temp_U1{frame, b} = frame_U1_bins{b};
+%         temp_V1{frame, b} = frame_V1_bins{b};
+%     end 
 
-end
-toc
+% end
+% toc
