@@ -1,6 +1,6 @@
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G7.mat'); 
+[S, filename] = loadData('L8_G3.mat'); 
 frames = 500; % size(S.all_u_matrix_liquid, 3);
 
 [
