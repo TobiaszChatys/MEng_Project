@@ -2,7 +2,7 @@
 clc; clear; close all;
 
 [S, filename] = loadData('L8_G3.mat'); 
-frames = size(S.all_u_matrix_liquid, 3);
+frames = 1000; %size(S.all_u_matrix_liquid, 3);
 
 
 %% compute Film height stats
@@ -74,10 +74,138 @@ yticks(y_ticks);
 yticklabels(y_ticks)
 xline(0, 'k--', 'LineWidth', 2);
 
-% Expected data points in each bin
+
+%% create storage for vertical velocity data in each bin
+
+bin_data = repmat(struct( ...
+    "U1", [], ...
+    "V1", [], ...    
+    "U2", [], ...
+    "V2", [] ...
+), number_of_bins, 1);
+
+Y_profile_air = Y1(:,1); % store air vertical positions
+Y_profile_liquid = Y2(:,1); % store liquid vertical positions
+
+[number_of_yair, number_of_xair] = size(U1); % getting dimensions
+[number_of_yliquid, number_of_xliquid] = size(U2);
+
+%% populate bins with vertical profiles based on film height
+
+tic
+for frame = 1:frames
+
+    fprintf('Processing frame %d / %d\r', frame, frames);
+    [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+
+    X_air_columns = X1(1, :);
+    X_liquid_columns = X2(1, :);
+
+    % air phase
+    for column = 1:number_of_xair
+        
+        x_pos = X_air_columns(column);
+        % local film height at this frame
+        local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
+        if isnan(local_film_height)
+            continue; % skip if no valid film height
+        end
+        % determine bin
+        bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
+
+        if isempty(bin_index) && local_film_height == bin_edges(end)
+            bin_index = n_bins; % assign to last bin if equal to max edge
+        elseif isempty(bin_index)
+            continue; % skip if no bin found
+        end
+
+        % extract vertical profile for this column
+        U1_column = U1(:, column);
+        V1_column = V1(:, column);
+
+        % append as new column in chosen bin
+        bin_data(bin_index).U1 = [bin_data(bin_index).U1, U1_column];
+        bin_data(bin_index).V1 = [bin_data(bin_index).V1, V1_column];
+    end
+
+    % liquid phase
+    for column = 1:number_of_xliquid
+        x_pos = X_liquid_columns(column);
+
+        % local film height at this frame
+        local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
+        if isnan(local_film_height)
+            continue; % skip if no valid film height
+        end
+        % determine bin
+        bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
+
+        if isempty(bin_index) && local_film_height == bin_edges(end)
+            bin_index = n_bins; % assign to last bin if equal to max edge
+        elseif isempty(bin_index)
+            continue; % skip if no bin found
+        end
+
+        % extract vertical profile for this column
+        U2_column = U2(:, column);
+        V2_column = V2(:, column);
+
+        % append as new column in chosen bin
+        bin_data(bin_index).U2 = [bin_data(bin_index).U2, U2_column];
+        bin_data(bin_index).V2 = [bin_data(bin_index).V2, V2_column];
+    end
+end
+
+toc
+
+%% compute conditonal mean profiles for each bin
+
+conditional_means = repmat(struct( ...
+    "U1_mean", [], ...
+    "V1_mean", [], ...
+    "U2_mean", [], ...
+    "V2_mean", [] ...
+), number_of_bins, 1);
+
+for bin = 1:number_of_bins
+    if ~isempty(bin_data(bin).U1)
+        conditional_means(bin).U1_mean = mean(bin_data(bin).U1, 2, 'omitnan');
+        conditional_means(bin).V1_mean = mean(bin_data(bin).V1, 2, 'omitnan');
+    end
+
+    if ~isempty(bin_data(bin).U2)
+        conditional_means(bin).U2_mean = mean(bin_data(bin).U2, 2, 'omitnan');
+        conditional_means(bin).V2_mean = mean(bin_data(bin).V2, 2, 'omitnan');
+    end
+end
+
+fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
+
+%% Plotting all bins overlaid - LOG SCALE
+
+markers = {'s', 'o', '^', 'd', 'v', 'p', 'h'};
+figure('Position', [100, 100, 900, 600]);
+hold on;
+
+% Plot liquid phase for all bins (hollow markers)
+
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U2_mean)
+    semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+        markers{bin}, 'LineStyle', 'none');
+    end
+end
+
+% Plot air phase for all bins (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(conditional_means(bin).U1_mean) 
+    semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+        markers{bin}, 'LineStyle', 'none');
+    end
+end
 
 % %% Storage for binning results
-
+%hello
 % temp_U1_cell = cell(frames, number_of_bins);
 % temp_V1_cell = cell(frames, number_of_bins);
 % temp_U2_cell = cell(frames, number_of_bins);
