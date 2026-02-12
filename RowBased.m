@@ -498,8 +498,8 @@ axes('Position', [0.18, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
 box on;
 hold on;
 
-for idex = 1:number_of_analysis_bins
-    bin = Analysis_bins(idex);
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
     if ~isempty(conditional_means(bin).U2_mean)
         semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
@@ -507,8 +507,8 @@ for idex = 1:number_of_analysis_bins
     end
 end
 
-for idex = 1:number_of_analysis_bins
-    bin = Analysis_bins(idex);
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
     if ~isempty(conditional_means(bin).U1_mean)
         semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
@@ -521,6 +521,72 @@ xlim([0.01, 1]); % Focus on liquid phase velocity range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
+ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
+title('Liquid Phase Detail', 'FontSize', 9);
+hold off;
+
+subplot(1, 2, 2);
+hold on;
+
+% Plot liquid phase RMS fluctuations (filled markers)
+for index = 1:number_of_analysis_bins
+bin = Analysis_bins(index);
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+    semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
+        'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
+        'DisplayName', analysis_bin_labels{index});
+    end
+end
+
+% Plot air phase RMS fluctuations (hollow markers)
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if ~isempty(rms_fluctuations(bin).U1_rms) 
+    semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
+        'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+        'HandleVisibility', 'off');
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
+xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
+lgd = legend('FontSize', 9); 
+lgd.Position(1:2) = [0.8, 0.7];
+grid on;
+hold off;
+
+% Create inset zoom for RMS subplot
+axes('Position', [0.60, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
+box on;
+hold on;
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+        semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
+            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+            'MarkerFaceColor', 'none');
+    end
+end
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if ~isempty(rms_fluctuations(bin).U1_rms)
+        semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
+            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+            'MarkerFaceColor', color_air);
+    end
+end
+set(gca, 'XScale', 'log');
+xlim([0.01, 0.5]); % Focus on liquid phase RMS range
+ylim([min_film_height, max_film_height]); % Focus on film height range
+grid on;
+xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
 title('Liquid Phase Detail', 'FontSize', 9);
 hold off;
