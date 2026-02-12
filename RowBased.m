@@ -43,7 +43,10 @@ fprintf('Total number of rows within the film height range: %d\n', liquid_count)
 % since we have 31 vectors inbetween the min and max film heights, we can determine the number of bins
 
 %% Binning
-number_of_bins = 8;
+
+number_of_vecors_in_bin = 2;
+number_of_bins = floor(liquid_count / number_of_vecors_in_bin);
+fprintf('Number of bins based on %d vectors per bin: %d\n', number_of_vecors_in_bin, number_of_bins);
 bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
 %% plotting
 
@@ -276,7 +279,7 @@ fprintf('\nComputed RMS fluctuations for all bins.\n');
 
 %% Define plotting parameters and labels
 
-color_air = [25, 23, 36] / 255;      % #191724 for air phase
+color_air = [235, 111, 146] / 255;   % #eb6f92 for air phase
 color_liquid = [49, 116, 143] / 255; % #31748f for liquid phase
 
 bin_labels = cell(1, number_of_bins);
@@ -284,10 +287,13 @@ for bin = 1:number_of_bins
     bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
 end
 
-%% Plooting mean velocity and RMS profiles for all bins overlaid (log scale)
+markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^', 'p', 'h', 'v', '<', '>', 's', 'd'}; % Define a marker for each bin
 
-markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^'}; % Define a marker for each bin
-figure('Position', [100, 100, 900, 600]);
+%% Plotting mean velocity and RMS profiles for all bins overlaid (log scale)
+
+figure,
+
+subplot(1, 2, 1);
 hold on;
 
 plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', ...
@@ -323,6 +329,43 @@ title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 
 legend('Location', 'best', 'FontSize', 9);
 grid on;
 hold off;
+
+% Plot RMS of fluctuations for liquid phase and air phase for all bins (log scale)
+subplot(1, 2, 2);
+hold on;
+
+% Plot liquid phase RMS fluctuations (filled markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U2_rms)
+    semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
+        'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
+        'DisplayName', bin_labels{bin});
+    end
+end
+
+% Plot air phase RMS fluctuations (hollow markers)
+for bin = 1:number_of_bins
+    if ~isempty(rms_fluctuations(bin).U1_rms) 
+    semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
+        'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+        'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+        'HandleVisibility', 'off');
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 'FontSize', 14);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
+
+
 
 % %% Storage for binning results
 %hello
