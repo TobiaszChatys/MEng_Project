@@ -221,16 +221,30 @@ fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
 
 %% Plotting all bins overlaid - LOG SCALE
 
-markers = {'s', 'o', '^', 'd', 'v', 'p', 'h'};
+color_air = [25, 23, 36] / 255;      % #191724 for air phase
+color_liquid = [49, 116, 143] / 255; % #31748f for liquid phase
+
+bin_labels = cell(1, number_of_bins);
+for bin = 1:number_of_bins
+    bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
+end
+
+markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^'}; % Define a marker for each bin
 figure('Position', [100, 100, 900, 600]);
 hold on;
 
+plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', ...
+    'LineStyle', 'none', 'DisplayName', 'Liquid Phase (hollow)');
+plot(nan, nan, 'o', 'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+    'LineStyle', 'none', 'DisplayName', 'Air Phase (filled)');
+    
 % Plot liquid phase for all bins (hollow markers)
 
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U2_mean)
     semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none');
+        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+        'MarkerFaceColor', 'none', 'DisplayName', bin_labels{bin});
     end
 end
 
@@ -238,9 +252,21 @@ end
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U1_mean) 
     semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none');
+        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+        'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
     end
 end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12);
+xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 'FontSize', 14);
+legend('Location', 'best', 'FontSize', 9);
+grid on;
+hold off;
 
 % %% Storage for binning results
 %hello
