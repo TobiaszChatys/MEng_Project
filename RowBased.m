@@ -4,7 +4,6 @@ clc; clear; close all;
 [S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
-
 %% compute Film height stats
 
 Film_height_matrix = S.smoothed_film_height_matrix_out * 1e3;
@@ -48,6 +47,7 @@ number_of_vecors_in_bin = 4;
 number_of_bins = floor(liquid_count / number_of_vecors_in_bin);
 fprintf('Number of bins based on %d vectors per bin: %d\n', number_of_vecors_in_bin, number_of_bins);
 bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
+fprintf('Bin edges (mm):\n'); disp(bin_edges');
 %% plotting
 
 frame = 10;
@@ -296,10 +296,10 @@ figure,
 subplot(1, 2, 1);
 hold on;
 
-plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', ...
-    'LineStyle', 'none', 'DisplayName', 'Liquid Phase (hollow)');
-plot(nan, nan, 'o', 'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
-    'LineStyle', 'none', 'DisplayName', 'Air Phase (filled)');
+% plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', ...
+%     'LineStyle', 'none', 'DisplayName', 'Liquid Phase (hollow)');
+% plot(nan, nan, 'o', 'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+%     'LineStyle', 'none', 'DisplayName', 'Air Phase (filled)');
 
 % Plot liquid phase for all bins (hollow markers)
 
@@ -338,7 +338,7 @@ for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U2_mean)
         semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none', 'MarkerSize', 4);
+            'MarkerFaceColor', 'none');
     end
 end
 
@@ -346,7 +346,7 @@ for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U1_mean)
         semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air, 'MarkerSize', 4);
+            'MarkerFaceColor', color_air);
     end
 end
 set(gca, 'XScale', 'log');
@@ -402,14 +402,14 @@ for bin = 1:number_of_bins
     if ~isempty(rms_fluctuations(bin).U2_rms)
         semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none', 'MarkerSize', 4);
+            'MarkerFaceColor', 'none');
     end
 end
 for bin = 1:number_of_bins
     if ~isempty(rms_fluctuations(bin).U1_rms)
         semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air, 'MarkerSize', 4);
+            'MarkerFaceColor', color_air);
     end
 end
 set(gca, 'XScale', 'log');
@@ -421,48 +421,106 @@ ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
 title('Liquid Phase Detail', 'FontSize', 9);
 hold off;
 
+%% Identify representative bins for simplified plotting
 
+min_bin = 1; % Minimum film height (thinnest)
+max_bin = number_of_bins; % Maximum film height (thickest)
+median_bin = ceil(number_of_bins / 2); % Median film height (middle)
 
-% %% Storage for binning results
-%hello
-% temp_U1_cell = cell(frames, number_of_bins);
-% temp_V1_cell = cell(frames, number_of_bins);
-% temp_U2_cell = cell(frames, number_of_bins);
-% temp_V2_cell = cell(frames, number_of_bins);
+fprintf('\nRepresentative Bins for Simplified Plotting:\n');
+fprintf('Min Bin %d: %.2f - %.2f mm\n', min_bin, bin_edges(min_bin), bin_edges(min_bin+1));
+fprintf('Median Bin %d: %.2f - %.2f mm\n', median_bin, bin_edges(median_bin), bin_edges(median_bin+1));
+fprintf('Max Bin %d: %.2f - %.2f mm\n', max_bin, bin_edges(max_bin), bin_edges(max_bin+1));
 
-% bin_edges_local = bin_edges; % Store bin edges in a local variable for use in parfor loop
-% number_of_bins_local = number_of_bins; % Store number of bins in a local variable for use in parfor loop
-% %% Binning velocity vectors based on film height
+%% Plotting for the mix median and max
 
-% tic
-% parfor frame = 1:frames
+figure,
 
-%     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
-    
-%     x_air_columns = X1(1, :);
-%     y_liquid_columns = Y2(1, :);
+subplot(1, 2, 1);
+hold on;
 
-%     % Temporary storage for current frame's binned data
-%     frame_U1_bins = cell(number_of_bins_local, 1);
-%     frame_V1_bins = cell(number_of_bins_local, 1);
-
-
-%     % Air phase 
-
-%     for column = 1:numel(x_air_columns)
-%         x_position = x_air_columns(column);
-%         film_height_at_column = interp1(X3, Y3, x_position, 'linear', 'extrap'); % Get film height at this x position
-%         bin_index = find(film_height_at_column >= bin_edges_local(1:end-1) & film_height_at_column < bin_edges_local(2:end), 1);
-%         if ~isempty(bin_index)
-%             frame_U1_bins{bin_index} = [frame_U1_bins{bin_index}; U1(:, column)];
-%             frame_V1_bins{bin_index} = [frame_V1_bins{bin_index}; V1(:, column)];
-%         end
-%     end
-
-%     for b = 1:number_of_bins_local
-%         temp_U1{frame, b} = frame_U1_bins{b};
-%         temp_V1{frame, b} = frame_V1_bins{b};
-%     end 
-
+% bin_labels = cell(1, number_of_bins);
+% for bin = 1:number_of_bins
+%     bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
 % end
-% toc
+
+Analysis_bins = [min_bin, median_bin, max_bin];
+number_of_analysis_bins = length(Analysis_bins);
+analysis_bin_labels = cell(1, number_of_analysis_bins);
+
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if bin == min_bin
+        label_type = 'min';
+    elseif bin == median_bin
+        label_type = 'median';
+    else
+        label_type = 'max';
+    end
+    analysis_bin_labels{index} = sprintf('Bin %d: %.2f - %.2f mm (%s)', bin, bin_edges(bin), bin_edges(bin+1), label_type);
+end
+
+% Plot liquid phase for all bins (hollow markers)
+
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if ~isempty(conditional_means(bin).U2_mean)
+    semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+        'MarkerFaceColor', 'none', 'DisplayName', analysis_bin_labels{index});
+    end
+end
+
+% Plot air phase for all bins (filled markers)
+
+for index = 1:number_of_analysis_bins
+    bin = Analysis_bins(index);
+    if ~isempty(conditional_means(bin).U1_mean)
+    semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+        'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
+    end
+end
+
+set(gca, 'XScale', 'log');
+ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
+xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
+ylim([0, 28]); 
+yticks(0:2:28);
+xticks([0.1 0.5 1 5 10 50 100]);
+title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
+lgd = legend('FontSize', 9); 
+lgd.Position(1:2) = [0.32, 0.66];  
+grid on;
+hold off;
+
+axes('Position', [0.18, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
+box on;
+hold on;
+
+for idex = 1:number_of_analysis_bins
+    bin = Analysis_bins(idex);
+    if ~isempty(conditional_means(bin).U2_mean)
+        semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+            'MarkerFaceColor', 'none');
+    end
+end
+
+for idex = 1:number_of_analysis_bins
+    bin = Analysis_bins(idex);
+    if ~isempty(conditional_means(bin).U1_mean)
+        semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+            'MarkerFaceColor', color_air);
+    end
+end
+
+set(gca, 'XScale', 'log');
+xlim([0.01, 1]); % Focus on liquid phase velocity range
+ylim([min_film_height, max_film_height]); % Focus on film height range
+grid on;
+xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
+ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
+title('Liquid Phase Detail', 'FontSize', 9);
+hold off;
