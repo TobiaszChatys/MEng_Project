@@ -209,7 +209,7 @@ percentile_labels = {
 %% Plotting all bins overlaid - LOG SCALE
 
 figure('Position', [100, 100, 900, 600]);
-hold on;
+hold on;;;
 
 % Plot liquid phase for all bins (hollow markers)
 

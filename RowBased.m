@@ -219,7 +219,62 @@ end
 
 fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
 
-%% Plotting all bins overlaid - LOG SCALE
+%% Calculate velocity fluctuations for each bin
+
+fluctuation_data = repmat(struct( ...
+    "U1_prime", [], ...
+    "V1_prime", [], ...
+    "U2_prime", [], ...
+    "V2_prime", [] ...
+), number_of_bins, 1);
+
+fprintf('\nCalculating velocity fluctuations for each bin...\n');
+
+for bin = 1:number_of_bins
+    % Air phase fluctuations
+    if ~isempty(bin_data(bin).U1)
+        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+        fluctuation_data(bin).U1_prime = bin_data(bin).U1 - conditional_means(bin).U1_mean;
+        fluctuation_data(bin).V1_prime = bin_data(bin).V1 - conditional_means(bin).V1_mean;
+        
+        fprintf('Bin %d Air: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U1, 2));
+    end
+    
+    % Liquid phase fluctuations
+    if ~isempty(bin_data(bin).U2)
+        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+        fluctuation_data(bin).U2_prime = bin_data(bin).U2 - conditional_means(bin).U2_mean;
+        fluctuation_data(bin).V2_prime = bin_data(bin).V2 - conditional_means(bin).V2_mean;
+        
+        fprintf('Bin %d Liquid: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U2, 2));
+    end
+end
+%% Calculate RMS (root mean square) of fluctuations
+
+rms_fluctuations = repmat(struct( ...
+    "U1_rms", [], ...
+    "V1_rms", [], ...
+    "U2_rms", [], ...
+    "V2_rms", [] ...
+), number_of_bins, 1);
+
+for bin = 1:number_of_bins
+    % Air phase RMS
+    if ~isempty(fluctuation_data(bin).U1_prime)
+        rms_fluctuations(bin).U1_rms = sqrt(mean(fluctuation_data(bin).U1_prime.^2, 2, 'omitnan'));
+        rms_fluctuations(bin).V1_rms = sqrt(mean(fluctuation_data(bin).V1_prime.^2, 2, 'omitnan'));
+    end
+    
+    % Liquid phase RMS
+    if ~isempty(fluctuation_data(bin).U2_prime)
+        rms_fluctuations(bin).U2_rms = sqrt(mean(fluctuation_data(bin).U2_prime.^2, 2, 'omitnan'));
+        rms_fluctuations(bin).V2_rms = sqrt(mean(fluctuation_data(bin).V2_prime.^2, 2, 'omitnan'));
+    end
+end
+
+fprintf('\nComputed RMS fluctuations for all bins.\n');
+
+%% Define plotting parameters and labels
 
 color_air = [25, 23, 36] / 255;      % #191724 for air phase
 color_liquid = [49, 116, 143] / 255; % #31748f for liquid phase
@@ -229,6 +284,8 @@ for bin = 1:number_of_bins
     bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
 end
 
+%% Plooting mean velocity and RMS profiles for all bins overlaid (log scale)
+
 markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^'}; % Define a marker for each bin
 figure('Position', [100, 100, 900, 600]);
 hold on;
@@ -237,7 +294,7 @@ plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', 
     'LineStyle', 'none', 'DisplayName', 'Liquid Phase (hollow)');
 plot(nan, nan, 'o', 'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
     'LineStyle', 'none', 'DisplayName', 'Air Phase (filled)');
-    
+
 % Plot liquid phase for all bins (hollow markers)
 
 for bin = 1:number_of_bins
@@ -247,7 +304,6 @@ for bin = 1:number_of_bins
         'MarkerFaceColor', 'none', 'DisplayName', bin_labels{bin});
     end
 end
-
 % Plot air phase for all bins (filled markers)
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U1_mean) 
