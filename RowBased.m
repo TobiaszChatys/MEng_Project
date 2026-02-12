@@ -1,7 +1,7 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G3.mat'); 
+[S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 
@@ -320,12 +320,12 @@ for bin = 1:number_of_bins
 end
 
 set(gca, 'XScale', 'log');
-ylabel('Y Position (mm)', 'FontSize', 12);
-xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
+ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
+xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
 xticks([0.1 0.5 1 5 10 50 100]);
-title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 'FontSize', 14);
+title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 legend('Location', 'best', 'FontSize', 9);
 grid on;
 hold off;
@@ -355,12 +355,12 @@ for bin = 1:number_of_bins
 end
 
 set(gca, 'XScale', 'log');
-ylabel('Y Position (mm)', 'FontSize', 12);
-xlabel('Mean Velocity Magnitude (log scale)', 'FontSize', 12);
+ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
+xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
 xticks([0.1 0.5 1 5 10 50 100]);
-title('Conditional Averaged Velocity Profiles (Log Scale) - All Bins Overlaid', 'FontSize', 14);
+title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 legend('Location', 'best', 'FontSize', 9);
 grid on;
 hold off;
