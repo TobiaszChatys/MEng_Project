@@ -326,7 +326,8 @@ ylim([0, 28]);
 yticks(0:2:28);
 xticks([0.1 0.5 1 5 10 50 100]);
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-legend('Location', 'best', 'FontSize', 9);
+lgd = legend('FontSize', 9); 
+lgd.Position(1:2) = [0.32, 0.66];  
 grid on;
 hold off;
 
@@ -388,7 +389,8 @@ ylim([0, 28]);
 yticks(0:2:28);
 xticks([0.1 0.5 1 5 10 50 100]);
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-legend('Location', 'best', 'FontSize', 9);
+lgd = legend('FontSize', 9); 
+lgd.Position(1:2) = [0.8, 0.7]; 
 grid on;
 hold off;
 
