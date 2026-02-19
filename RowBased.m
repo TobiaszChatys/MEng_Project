@@ -1,7 +1,7 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G3.mat'); 
+[S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% compute Film height stats
@@ -43,7 +43,7 @@ fprintf('Total number of rows within the film height range: %d\n', liquid_count)
 
 %% Binning
 
-number_of_vecors_in_bin = 3;
+number_of_vecors_in_bin = 2;
 number_of_bins = floor(liquid_count / number_of_vecors_in_bin);
 fprintf('Number of bins based on %d vectors per bin: %d\n', number_of_vecors_in_bin, number_of_bins);
 bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
@@ -324,8 +324,8 @@ ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
 xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
-xlim([0, 15]);
-xticks([0.1 0.5 1 5 10 15]);
+xlim([0, 25]);
+xticks([0.1 0.5 1 5 10 25]);
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
 lgd.Position(1:2) = [0.32, 0.66];  
@@ -351,7 +351,7 @@ for bin = 1:number_of_bins
     end
 end
 set(gca, 'XScale', 'log');
-xlim([0.01, 1]); % Focus on liquid phase velocity range
+xlim([0.1, 1]); % Focus on liquid phase velocity range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -388,7 +388,7 @@ ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
 xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
-xlim([0, 5]);
+xlim([0, 15]);
 xticks([0.1 0.5 1 5 10 15]);
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
@@ -415,7 +415,7 @@ for bin = 1:number_of_bins
     end
 end
 set(gca, 'XScale', 'log');
-xlim([0.01, 0.5]); % Focus on liquid phase RMS range
+xlim([0.1, 0.5]); % Focus on liquid phase RMS range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -489,8 +489,8 @@ ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
 xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
-xlim([0, 15]);
-xticks([0.1 0.5 1 5 10 15]);
+xlim([0, 25]);
+xticks([0.1 0.5 1 5 10 25]);
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
 lgd.Position(1:2) = [0.32, 0.66];  
@@ -520,7 +520,7 @@ for index = 1:number_of_analysis_bins
 end
 
 set(gca, 'XScale', 'log');
-xlim([0.01, 1]); % Focus on liquid phase velocity range
+xlim([0.1, 1]); % Focus on liquid phase velocity range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -558,7 +558,7 @@ ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
 xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
 ylim([0, 28]); 
 yticks(0:2:28);
-xlim([0, 5]);
+xlim([0, 10]);
 xticks([0.1 0.5 1 5 10 50 100]);
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
@@ -587,7 +587,7 @@ for index = 1:number_of_analysis_bins
     end
 end
 set(gca, 'XScale', 'log');
-xlim([0.01, 0.5]); % Focus on liquid phase RMS range
+xlim([0.1, 0.5]); % Focus on liquid phase RMS range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
