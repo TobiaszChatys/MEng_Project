@@ -17,6 +17,14 @@ function [X1, Y1, U1, V1, Z1] = getAirData(S, frame)
     V1(zero_mask) = NaN;
 
     Z1 = hypot(U1, V1);
+
+    x_air = X1(1, :); % 1 x 50 (x positions)
+    film_height_at_liquid_x = interp1(X3, Y3, x_air, 'linear', 'extrap'); % 1 x 50 
+
+    liquid_above_interface = Y1 > film_height_at_liquid_x; % 99 x 50 logical matrix
+
+    U1(liquid_above_interface) = NaN;
+    V1(liquid_above_interface) = NaN;
 end
 
 function [X2, Y2, U2, V2, Z2] = getLiquidData(S, frame)
@@ -31,6 +39,18 @@ function [X2, Y2, U2, V2, Z2] = getLiquidData(S, frame)
     V2(zero_mask) = NaN;
 
     Z2 = hypot(U2, V2);
+
+    % For any liquid vertical positon (Y2) that is less than the film height at the same x positon,
+    % set the liquid velocity to NaN
+
+    x_liquid = X2(1, :); % 1 x 50 (x positions)
+    film_height_at_liquid_x = interp1(X3, Y3, x_liquid, 'linear', 'extrap'); % 1 x 50 
+
+    liquid_above_interface = Y2 > film_height_at_liquid_x; % 99 x 50 logical matrix
+
+    U2(liquid_above_interface) = NaN;
+    V2(liquid_above_interface) = NaN;
+
 end
 
 function [X3, Y3] = getFilmData(S, frame)
