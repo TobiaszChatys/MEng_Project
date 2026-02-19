@@ -21,7 +21,7 @@ function [X1, Y1, U1, V1, Z1] = getAirData(S, frame)
     x_air = X1(1, :); % 1 x 50 (x positions)
     film_height_at_liquid_x = interp1(X3, Y3, x_air, 'linear', 'extrap'); % 1 x 50 
 
-    liquid_above_interface = Y1 > film_height_at_liquid_x; % 99 x 50 logical matrix
+    liquid_above_interface = Y1 < film_height_at_liquid_x; % 99 x 50 logical matrix
 
     U1(liquid_above_interface) = NaN;
     V1(liquid_above_interface) = NaN;
