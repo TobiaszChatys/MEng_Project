@@ -1,7 +1,7 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G7.mat'); 
+[S, filename] = loadData('L8_G12.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% compute Film height stats
@@ -337,7 +337,7 @@ box on;
 hold on;
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U2_mean)
-        semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+        plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
             'MarkerFaceColor', 'none');
     end
@@ -345,12 +345,13 @@ end
 
 for bin = 1:number_of_bins
     if ~isempty(conditional_means(bin).U1_mean)
-        semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+        plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
             'MarkerFaceColor', color_air);
     end
 end
-set(gca, 'XScale', 'log');
+
+set(gca, 'XScale', 'linear');
 xlim([0.1, 1]); % Focus on liquid phase velocity range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
@@ -402,19 +403,19 @@ box on;
 hold on;
 for bin = 1:number_of_bins
     if ~isempty(rms_fluctuations(bin).U2_rms)
-        semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
+        plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
             'MarkerFaceColor', 'none');
     end
 end
 for bin = 1:number_of_bins
     if ~isempty(rms_fluctuations(bin).U1_rms)
-        semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
+        plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
             'MarkerFaceColor', color_air);
     end
 end
-set(gca, 'XScale', 'log');
+set(gca, 'XScale', 'linear');
 xlim([0.1, 0.5]); % Focus on liquid phase RMS range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
@@ -504,7 +505,7 @@ hold on;
 for index = 1:number_of_analysis_bins
     bin = Analysis_bins(index);
     if ~isempty(conditional_means(bin).U2_mean)
-        semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+        plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
             'MarkerFaceColor', 'none');
     end
@@ -513,13 +514,13 @@ end
 for index = 1:number_of_analysis_bins
     bin = Analysis_bins(index);
     if ~isempty(conditional_means(bin).U1_mean)
-        semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+        plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
             'MarkerFaceColor', color_air);
     end
 end
 
-set(gca, 'XScale', 'log');
+set(gca, 'XScale', 'linear');
 xlim([0.1, 1]); % Focus on liquid phase velocity range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
@@ -573,7 +574,7 @@ hold on;
 for index = 1:number_of_analysis_bins
     bin = Analysis_bins(index);
     if ~isempty(rms_fluctuations(bin).U2_rms)
-        semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
+        plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
             'MarkerFaceColor', 'none');
     end
@@ -581,12 +582,12 @@ end
 for index = 1:number_of_analysis_bins
     bin = Analysis_bins(index);
     if ~isempty(rms_fluctuations(bin).U1_rms)
-        semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
+        plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
             markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
             'MarkerFaceColor', color_air);
     end
 end
-set(gca, 'XScale', 'log');
+set(gca, 'XScale', 'linear');
 xlim([0.1, 0.5]); % Focus on liquid phase RMS range
 ylim([min_film_height, max_film_height]); % Focus on film height range
 grid on;
