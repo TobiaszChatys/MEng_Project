@@ -4,6 +4,9 @@ clc; clear; close all;
 [S, filename] = loadData('L8_G12.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
+use_centerline = true; % Set to true to use centerline, false to use fixed column
+centerline_width = 10; % Number of columns to include around the centerline (if use_centerline is true)
+
 %% compute Film height stats
 
 Film_height_matrix = S.smoothed_film_height_matrix_out * 1e3;
@@ -95,6 +98,9 @@ Y_profile_liquid = Y2(:,1); % store liquid vertical positions
 
 %% populate bins with vertical profiles based on film height (parallel)
 
+center_column_index = 25;  % If using centerline.
+half_width = floor(centerline_width / 2);
+
 tic
 
 % Temporary per-frame, per-bin storage for parfor (cells are parfor-safe)
@@ -116,8 +122,15 @@ parfor frame = 1:frames
     frame_U2 = cell(1, number_of_bins);
     frame_V2 = cell(1, number_of_bins);
 
+
+    if use_centerline
+        columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
+    else
+        columns_to_process = 1:numel(X_air_columns); % Process all columns
+    end
+
     % air phase
-    for column = 1:numel(X_air_columns)
+    for column = columns_to_process
         x_pos = X_air_columns(column);
         local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
         if isnan(local_film_height)
@@ -141,9 +154,16 @@ parfor frame = 1:frames
             frame_V1{bin_index} = [frame_V1{bin_index}, V1_column];
         end
     end
+    
+
+    if use_centerline
+        columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
+    else
+        columns_to_process = 1:numel(X_liquid_columns); % Process all columns
+    end
 
     % liquid phase
-    for column = 1:numel(X_liquid_columns)
+    for column = columns_to_process
         x_pos = X_liquid_columns(column);
         local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
         if isnan(local_film_height)
