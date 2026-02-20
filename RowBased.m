@@ -5,7 +5,8 @@ clc; clear; close all;
 frames = size(S.all_u_matrix_liquid, 3);
 
 use_centerline = true; % Set to true to use centerline, false to use fixed column
-centerline_width = 10; % Number of columns to include around the centerline (if use_centerline is true)
+use_centerline_width = false; % Set to true to specify width around centerline, false to use single column
+centerline_width = 20; % Number of columns to include around the centerline (if use_centerline is true)
 
 %% compute Film height stats
 
@@ -110,8 +111,10 @@ temp_U2 = cell(frames, number_of_bins);
 temp_V2 = cell(frames, number_of_bins);
 
 parfor frame = 1:frames
-    fprintf('Processing frame %d/%d...\n', frame, frames);
+
     [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+
+    fprintf('Processing frame %d/%d...\n', frame, frames);
 
     X_air_columns = X1(1, :);
     X_liquid_columns = X2(1, :);
@@ -123,8 +126,10 @@ parfor frame = 1:frames
     frame_V2 = cell(1, number_of_bins);
 
 
-    if use_centerline
-        columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
+    if use_centerline && use_centerline_width
+        columns_to_process = center_column_index - half_width : center_column_index + half_width % Process columns around the centerline
+    elseif use_centerline
+        columns_to_process = center_column_index; % Process only the center column
     else
         columns_to_process = 1:numel(X_air_columns); % Process all columns
     end
@@ -156,8 +161,10 @@ parfor frame = 1:frames
     end
     
 
-    if use_centerline
+    if use_centerline && use_centerline_width
         columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
+    elseif use_centerline
+        columns_to_process = center_column_index; % Process only the center column
     else
         columns_to_process = 1:numel(X_liquid_columns); % Process all columns
     end
@@ -218,6 +225,17 @@ for b = 1:number_of_bins
 end
 
 toc
+
+% Check total vectors processed per bin
+fprintf('\n=== Vector Count Summary ===\n');
+for b = 1:number_of_bins
+    n_air = size(bin_data(b).U1, 2);
+    n_liquid = size(bin_data(b).U2, 2);
+    fprintf('Bin %d: Air = %d vectors, Liquid = %d vectors\n', b, n_air, n_liquid);
+end
+total_air = sum(arrayfun(@(x) size(x.U1, 2), bin_data));
+total_liquid = sum(arrayfun(@(x) size(x.U2, 2), bin_data));
+fprintf('Total: Air = %d, Liquid = %d\n', total_air, total_liquid);
 
 %% compute conditonal mean profiles for each bin
 
