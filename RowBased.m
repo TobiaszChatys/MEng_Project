@@ -1,29 +1,61 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G12.mat'); 
+[S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 use_centerline = true; % Set to true to use centerline, false to use fixed column
-use_centerline_width = false; % Set to true to specify width around centerline, false to use single column
+use_centerline_width = true; % Set to true to specify width around centerline, false to use single column
 centerline_width = 20; % Number of columns to include around the centerline (if use_centerline is true)
+
+%% Determine colums to process based on centerline settings
+
+center_column_index = 27;  % If using centerline.
+half_width = floor(centerline_width / 2);
+X_air_columns =S.all_transposed_x_position_matrix_liquid(1, :);
+
+if use_centerline && use_centerline_width
+    columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
+elseif use_centerline
+    columns_to_process = center_column_index; % Process only the center column
+else
+    columns_to_process = 1:numel(X_air_columns); % Process all columns
+end
 
 %% compute Film height stats
 
 Film_height_matrix = S.smoothed_film_height_matrix_out * 1e3;
-all_film_heights = Film_height_matrix(Film_height_matrix >= 0); % Filter out negative heights
+Film_x_positions = S.film_x_position(1, :) * 1e3;  % 1 x 1973 array
+
+% Get x-positions of velocity columns being processed
+X_velocity_columns = S.all_transposed_x_position_matrix_liquid(1, :, 1) * 1e3;  % 1 x 50
+x_positions_to_use = X_velocity_columns(columns_to_process);  % x-positions we care about
+
+% Find corresponding indices in the film height array
+film_indices_to_use = zeros(size(x_positions_to_use));
+for i = 1:length(x_positions_to_use)
+    [~, film_indices_to_use(i)] = min(abs(Film_x_positions - x_positions_to_use(i)));
+end
+
+% Extract film heights only at these x-positions across all frames
+all_film_heights_local = [];
+for frame = 1:frames
+    film_heights_at_columns = Film_height_matrix(film_indices_to_use, frame);
+    valid_heights = film_heights_at_columns(film_heights_at_columns >= 0);
+    all_film_heights_local = [all_film_heights_local; valid_heights];
+end
+
+
 invalid_film_heights = Film_height_matrix(Film_height_matrix < 0); % Count negative heights as invalid
-
-
-min_film_height = min(all_film_heights);
-max_film_height = max(all_film_heights);
-mean_film_height = mean(all_film_heights);
+min_film_height = min(all_film_heights_local);
+max_film_height = max(all_film_heights_local);
+mean_film_height = mean(all_film_heights_local);
 
 fprintf('Film Height Analysis for %s:\n', filename);
 fprintf('We are expecting 4932500 film height measurements (1973 x 2500) across all frames.\n');
-fprintf('Total Number of Film Height Measurements: %d\n', numel(all_film_heights));
+fprintf('Total Number of Film Height Measurements: %d\n', numel(all_film_heights_local));
 fprintf('Number of Invalid Film Height Measurements: %d\n', numel(invalid_film_heights));
-fprintf('Total number of film heights after filtering out invalid measurements: %d\n', numel(all_film_heights) + numel(invalid_film_heights));
+fprintf('Total number of film heights after filtering out invalid measurements: %d\n', numel(all_film_heights_local) + numel(invalid_film_heights));
 fprintf('Film Height Statistics:\n');
 fprintf('Minimum Film Height: %.2f mm\n', min_film_height);
 fprintf('Maximum Film Height: %.2f mm\n', max_film_height);
@@ -52,7 +84,12 @@ number_of_bins = floor(liquid_count / number_of_vecors_in_bin);
 fprintf('Number of bins based on %d vectors per bin: %d\n', number_of_vecors_in_bin, number_of_bins);
 bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
 fprintf('Bin edges (mm):\n'); disp(bin_edges');
-%% plottin
+%% plotting
+
+disp(center_column_index)
+disp(x_positions_to_use)
+x_min = min(x_positions_to_use) + 11 
+x_max = max(x_positions_to_use) + 11
 
 frame = 10;
 [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
@@ -61,11 +98,18 @@ quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
 hold on;
 quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
 hold on; 
+
+patch([x_min, x_max, x_max, x_min], [min_film_height, min_film_height, max_film_height, max_film_height], ...
+    'm', 'FaceAlpha', 0.1, 'EdgeColor', 'none');
+
 plot(X3 + 11, Y3, 'g', 'LineWidth', 4)
 hold off;
 yline(min_film_height, 'r--', 'LineWidth', 2);
 yline(max_film_height, 'r--', 'LineWidth', 2);
 
+xline(x_min, 'r--', 'LineWidth', 2);
+xline(x_max, 'r--', 'LineWidth', 2);
+xline(center_column_index, 'r--', 'LineWidth', 2);
 for bin = 2:length(bin_edges)-1
     yline(bin_edges(bin), 'm--', 'LineWidth', 1);
 end
@@ -99,9 +143,6 @@ Y_profile_liquid = Y2(:,1); % store liquid vertical positions
 
 %% populate bins with vertical profiles based on film height (parallel)
 
-center_column_index = 25;  % If using centerline.
-half_width = floor(centerline_width / 2);
-
 tic
 
 % Temporary per-frame, per-bin storage for parfor (cells are parfor-safe)
@@ -127,7 +168,7 @@ parfor frame = 1:frames
 
 
     if use_centerline && use_centerline_width
-        columns_to_process = center_column_index - half_width : center_column_index + half_width % Process columns around the centerline
+        columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
     elseif use_centerline
         columns_to_process = center_column_index; % Process only the center column
     else
