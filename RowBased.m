@@ -1,7 +1,7 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G7.mat'); 
+[S, filename] = loadData('L8_G12.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 use_centerline = true; % Set to true to use centerline, false to use fixed column
@@ -86,6 +86,10 @@ bin_edges = linspace(min_film_height, max_film_height, number_of_bins + 1);
 fprintf('Bin edges (mm):\n'); disp(bin_edges');
 %% plotting
 
+color_air = [235, 111, 146] / 255;   % #eb6f92 for air phase
+color_liquid = [49, 116, 143] / 255; % #31748f for liquid phase
+color_patch = [144, 122, 169] / 255;  % #907aa9 (purple)
+
 disp(center_column_index)
 disp(x_positions_to_use)
 x_min = min(x_positions_to_use) + 11 
@@ -94,21 +98,19 @@ x_max = max(x_positions_to_use) + 11
 frame = 10;
 [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
 
-quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
+quiver(X1 + 11, Y1, U1, V1, 0.8, 'color', color_air);
 hold on;
-quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
+quiver(X2 + 11, Y2, U2, V2, 0.8, 'color', color_liquid);
 hold on; 
 
-patch([x_min, x_max, x_max, x_min], [min_film_height, min_film_height, max_film_height, max_film_height], ...
-    'm', 'FaceAlpha', 0.1, 'EdgeColor', 'none');
-
+patch([x_min, x_max, x_max, x_min], [min_film_height, min_film_height, max_film_height, max_film_height], color_patch, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
 plot(X3 + 11, Y3, 'g', 'LineWidth', 4)
 hold off;
 yline(min_film_height, 'r--', 'LineWidth', 2);
 yline(max_film_height, 'r--', 'LineWidth', 2);
 
-xline(x_min, 'r--', 'LineWidth', 2);
-xline(x_max, 'r--', 'LineWidth', 2);
+xline(x_min, 'k--', 'LineWidth', 2);
+xline(x_max, 'k--', 'LineWidth', 2);
 xline(center_column_index, 'r--', 'LineWidth', 2);
 for bin = 2:length(bin_edges)-1
     yline(bin_edges(bin), 'm--', 'LineWidth', 1);
@@ -430,9 +432,11 @@ for bin = 1:number_of_bins
     end
 end
 
+liquid_detail_xmax = max(conditional_means(bin).U2_mean) * 1.05; % xlimit with a 5% buffer
+liquid_detail_xmin = min(conditional_means(bin).U2_mean) * 0.8; % xlimit with a 20% buffer
 set(gca, 'XScale', 'linear');
-xlim([0.1, 1]); % Focus on liquid phase velocity range
-ylim([min_film_height, max_film_height]); % Focus on film height range
+xlim([liquid_detail_xmin, liquid_detail_xmax]); % Focus on liquid phase velocity range
+ylim([0, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -494,9 +498,13 @@ for bin = 1:number_of_bins
             'MarkerFaceColor', color_air);
     end
 end
+
+liquid_detail_xmax = max(rms_fluctuations(bin).U2_rms) * 1.05; % xlimit with a 5% buffer
+liquid_detail_xmin = min(rms_fluctuations(bin).U2_rms) * 0.8; % xlimit with a 20% buffer
+
 set(gca, 'XScale', 'linear');
-xlim([0.1, 0.5]); % Focus on liquid phase RMS range
-ylim([min_film_height, max_film_height]); % Focus on film height range
+xlim([liquid_detail_xmin, liquid_detail_xmax]); % Focus on liquid phase RMS range
+ylim([0, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -599,9 +607,12 @@ for index = 1:number_of_analysis_bins
     end
 end
 
+liquid_detail_xmax = max(conditional_means(bin).U2_mean) * 1.05; % xlimit with a 5% buffer
+liquid_detail_xmin = min(conditional_means(bin).U2_mean) * 0.8; % xlimit with a 20% buffer
+
 set(gca, 'XScale', 'linear');
-xlim([0.1, 1]); % Focus on liquid phase velocity range
-ylim([min_film_height, max_film_height]); % Focus on film height range
+xlim([liquid_detail_xmin, liquid_detail_xmax]); % Focus on liquid phase velocity range
+ylim([0, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$\overline{u}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
@@ -666,9 +677,13 @@ for index = 1:number_of_analysis_bins
             'MarkerFaceColor', color_air);
     end
 end
+
+liquid_detail_xmax = max(rms_fluctuations(bin).U2_rms) * 1.05; % xlimit with a 5% buffer
+liquid_detail_xmin = min(rms_fluctuations(bin).U2_rms) * 0.8; % xlimit with a 20% buffer
+
 set(gca, 'XScale', 'linear');
-xlim([0.1, 0.5]); % Focus on liquid phase RMS range
-ylim([min_film_height, max_film_height]); % Focus on film height range
+xlim([liquid_detail_xmin, liquid_detail_xmax]); % Focus on liquid phase RMS range
+ylim([0, max_film_height]); % Focus on film height range
 grid on;
 xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
