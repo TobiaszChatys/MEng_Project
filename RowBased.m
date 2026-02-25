@@ -406,9 +406,14 @@ xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'l
 ylim([0, 28]); 
 yticks(0:2:28);
 
-x_lim = max(conditional_means(bin).U1_mean) * 1.05; % xlimit with a 5% buffer
-xlim([0, x_lim]);
-xticks([0.1 0.5 1 5 10 25]);
+
+xticks_array = [0.1 0.5 1 5 10 15];
+max_x = max(conditional_means(bin).U1_mean) * 1.05; % xlimit with a 5% buffer
+xlim_value = findXlimFromXticks(max_x, xticks_array);
+
+xlim([0, xlim_value]);
+xticks(xticks_array);
+
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
 lgd.Position(1:2) = [0.32, 0.66];  
@@ -475,9 +480,14 @@ xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex'
 ylim([0, 28]); 
 yticks(0:2:28);
 
-x_lim = max(rms_fluctuations(bin).U1_rms) * 1.05; % xlimit with a 5% buffer
-xlim([0, x_lim]);
-xticks([0.1 0.5 1 5 10 15]);
+xticks_array = [0.1 0.5 1 5 10 15];
+max_x = max(rms_fluctuations(bin).U1_rms) * 1.05; % xlimit with a 5% buffer
+xlim_value = findXlimFromXticks(max_x, xticks_array);
+
+xlim([0, xlim_value]);
+xticks(xticks_array);
+
+
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
 lgd.Position(1:2) = [0.8, 0.7]; 
