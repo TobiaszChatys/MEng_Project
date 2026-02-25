@@ -358,6 +358,24 @@ end
 
 fprintf('\nComputed RMS fluctuations for all bins.\n');
 
+%% clean Mean and RMS data
+
+% use the standard z-score:
+% z = (x - mean) / std
+
+x = rms_fluctuations(bin).U2_rms;
+
+mean = mean(x, 'omitnan');
+std = std(x, 'omitnan');
+
+z = (x - mean) ./ std;
+
+x_clean = x;
+x_clean(abs(z) > 3) = NaN;
+
+rms_fluctuations(bin).U2_rms = x_clean;
+
+
 %% Define plotting parameters and labels
 
 color_air = [235, 111, 146] / 255;   % #eb6f92 for air phase
@@ -676,7 +694,6 @@ xlim_value = findXlimFromXticks(max_x, xticks_array);
 
 xlim([0, xlim_value]);
 xticks(xticks_array);
-
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
 lgd = legend('FontSize', 9); 
 lgd.Position(1:2) = [0.8, 0.7];
