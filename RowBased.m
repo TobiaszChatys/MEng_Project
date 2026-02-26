@@ -1,7 +1,7 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G10.mat'); 
+[S, filename] = loadData('L8_G4.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 use_centerline = true; % Set to true to use centerline, false to use fixed column
@@ -363,18 +363,34 @@ fprintf('\nComputed RMS fluctuations for all bins.\n');
 % use the standard z-score:
 % z = (x - mean) / std
 
-x = rms_fluctuations(bin).U2_rms;
+z_scores = repmat(struct('U2_rms_z', [], 'U2_mean_z', []), number_of_bins, 1);
 
-mean = mean(x, 'omitnan');
-std = std(x, 'omitnan');
+for bin = 1:number_of_bins
+    x_rms = rms_fluctuations(bin).U2_rms;
+    x_mean = conditional_means(bin).U2_mean;
 
-z = (x - mean) ./ std;
+    mean_rms = mean(x_rms, 'omitnan');
+    mean_mean = mean(x_mean, 'omitnan');
 
-x_clean = x;
-x_clean(abs(z) > 3) = NaN;
+    std_rms = std(x_rms, 'omitnan');
+    std_mean = std(x_mean, 'omitnan');
 
-rms_fluctuations(bin).U2_rms = x_clean;
+    z_rms = (x_rms - mean_rms) ./ std_rms;
+    z_mean = (x_mean - mean_mean) ./ std_mean;
 
+    z_scores(bin).U2_rms_z = abs(z_rms);
+    z_scores(bin).U2_mean_z = abs(z_mean);
+
+    x_clean_rms = x_rms;
+    x_clean_mean = x_mean;
+
+    x_clean_rms(abs(z_rms) > 1.3) = NaN; % G4 at 1.4 is crazy
+    x_clean_mean(abs(z_mean) > 2.5) = NaN;
+
+    rms_fluctuations(bin).U2_rms = x_clean_rms;
+    conditional_means(bin).U2_mean = x_clean_mean;
+    
+end
 
 %% Define plotting parameters and labels
 
@@ -425,7 +441,7 @@ ylim([0, 28]);
 yticks(0:2:28);
 
 
-xticks_array = [0.1 0.5 1 5 10 15];
+xticks_array = [0.1 0.5 1 2 5 10 15];
 max_x = max(conditional_means(bin).U1_mean) * 1.05; % xlimit with a 5% buffer
 xlim_value = findXlimFromXticks(max_x, xticks_array);
 
