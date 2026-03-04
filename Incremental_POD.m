@@ -27,9 +27,34 @@ parfor frame = 1:frames
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
 end
+% U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 2499
 
-size(V2_Vectorised)
-size(U2_Vectorised)
+% Create the snapchot matrix
+Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
+% Snapshot matrix is 9900 by 2499
+
+% removes all nans from the matrix
+Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
+
+%% Normalisation
+% A flow field can be split into a steady, time average component u dash, and a fluctuating dynamic
+% component u', POD is always perfomed on the fluctuations.
+% By subtracting the time-averaged mean from every single frame, the POD will isolate the moving,
+% turbulent structures rather than just showing static background noise. centering the data, ensuring the
+% resulting POD modes describe how the flow changes or fluctuates over time.
+
+% taking the mean across every column, mean(snapshot_matrix, 1) would take the mean at every row
+mean = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
+
+% repmat creates a matrix of size M by N (9900 by 2499) with the 1 meaning how many times to repeat vertically
+mean_matrix = repmat(mean, 1, frames);
+
+% computing the fluctuations u'
+snapshot_fluctuations = Snapshot_matrix - mean_matrix;
+
+size(snapshot_fluctuations)
+
+
 
 
 
