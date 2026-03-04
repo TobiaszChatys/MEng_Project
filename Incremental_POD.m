@@ -46,8 +46,31 @@ Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
 % taking the mean across every column, mean(snapshot_matrix, 1) would take the mean at every row
 mean = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
 
-% computing the fluctuations u'
+% computing the fluctuations u', altough mean is a 9900 by 1 matrix and snapshot_matrix is 9900 by 2499
+% MATLAB will notice that it only has one column an preten it has been repeated to match the snapshot_matrix
 snapshot_fluctuations = Snapshot_matrix - mean;
+
+%% Segment data
+% Because the fluctuations matrix X is huge, loading it all into the memory for matrix multiplication can 
+% slow down the process.
+% so we can process the matrix by loading block by block
+
+block_size = 100; % loading 100 frames at a time
+number_of_blocks = ceil(frames / block_size); % calcualtes how many blocks we will process in total
+% ceil rounds up to make sure there are no left over frames 
+
+% A cell array makes sure that if the last block is smaller than the others, the system wont crash. A cell
+% can hold diffrent sizes of matries whereas normal matrices must be perfectly rectangular.
+Snapshot_blocks = cell(number_of_blocks, 1);
+
+% We need to perform some logic to tell MATLAB where to start and finish each block
+% it will always be (n * 100) + 1
+parfor block = 1:number_of_blocks
+    start_frame = ((block - 1) * block_size) + 1;
+    end_frame = min(block * block_size, frames);
+    snapshot_blocks{block} = snapshot_fluctuations(:, start_frame:end_frame);
+end
+
 
 
 
