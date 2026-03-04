@@ -46,13 +46,9 @@ Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
 % taking the mean across every column, mean(snapshot_matrix, 1) would take the mean at every row
 mean = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
 
-% repmat creates a matrix of size M by N (9900 by 2499) with the 1 meaning how many times to repeat vertically
-mean_matrix = repmat(mean, 1, frames);
-
 % computing the fluctuations u'
-snapshot_fluctuations = Snapshot_matrix - mean_matrix;
+snapshot_fluctuations = Snapshot_matrix - mean;
 
-size(snapshot_fluctuations)
 
 
 
