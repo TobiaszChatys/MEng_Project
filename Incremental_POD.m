@@ -110,7 +110,22 @@ Temporal_Covariance = Temporal_Covariance / frames;
 % eigenvectors are the temporal modes, they tell you how the strength of a specific flow strucrure fluctuates
 % over time 
 
-[eigenvectors, eigenvalues] = eig(Temporal_Covariance);
+% perform eigenvalue Decompositon on the N by N Temporal_Covariance matrix
+[eigenvectors_matrix, eigenvalues_matrix] = eig(Temporal_Covariance);
+eigenvalues = diag(eigenvalues_matrix);
+
+sorted_eigenvalues = sort(eigenvalues, 'descend');
+
+% Calculate cumlative energy
+
+total_energy = sum(eigenvalues);
+cumulative_energy = cumsum(eigenvalues) / total_energy;
+thresholds = [0.90, 0.95, 0.99];
+
+parfor threshold = 1:length(thresholds)
+  modes_to_retain = find(cumulative_energy >= thresholds(threshold), 1);
+end
+
 
 
 
