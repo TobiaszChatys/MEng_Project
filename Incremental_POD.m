@@ -39,7 +39,7 @@ Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
 %% Normalisation
 % A flow field can be split into a steady, time average component u dash, and a fluctuating dynamic
 % component u', POD is always perfomed on the fluctuations.
-% By subtracting the time-averaged mean from every single frame, the POD will isolate the moving,
+% By subtracting the time-averaged mean from every sinrle frame, the POD will isolate the moving,
 % turbulent structures rather than just showing static background noise. centering the data, ensuring the
 % resulting POD modes describe how the flow changes or fluctuates over time.
 
@@ -67,9 +67,33 @@ Snapshot_blocks = cell(number_of_blocks, 1);
 % it will always be (n * 100) + 1
 parfor block = 1:number_of_blocks
     start_frame = ((block - 1) * block_size) + 1;
+    % The minimum function is a saftey net to make sure if the total number is larger than the total frame 
+    % present, stop at the last frame. preventing index out of bound error.
     end_frame = min(block * block_size, frames);
     snapshot_blocks{block} = snapshot_fluctuations(:, start_frame:end_frame);
 end
+
+%% Incremental POD
+% A standard spatial covariance matrix is calculated as C = XX^T. if X has millions of rows, C would
+% be a million by million matrix making it impossible to store
+% Instead you can calculate the temporal covariance matrix X^TX, this results in an N by N matrix
+% 2500 by 2500, (6.25E6) elements 
+
+Temporal_Covariance = zeros(frames, frames);
+
+
+parfor block = 1:number_of_blocks
+  start_block = ((block - 1) * block_size) + 1;
+  end_block = min(block * block_size, frames);
+  current_block = snapshot_blocks{block};
+
+  parfor upper_block = block:number_of_blocks
+  end
+
+end 
+Block_i = snapshot_blocks{i}; 
+Block_j = snapshot_blocks{j}; 
+
 
 
 
