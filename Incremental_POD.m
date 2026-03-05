@@ -82,17 +82,25 @@ end
 Temporal_Covariance = zeros(frames, frames);
 
 
-parfor block = 1:number_of_blocks
+for block = 1:number_of_blocks
   start_block = ((block - 1) * block_size) + 1;
   end_block = min(block * block_size, frames);
   current_block = snapshot_blocks{block};
+ 
+  for upper_block = block:number_of_blocks
+    start_upper_block = ((upper_block - 1) * block_size) + 1;
+    end_upper_block = min(upper_block * block_size, frames);
+    current_upper_block = snapshot_blocks{upper_block};
+    
+    computed_block = current_block' * current_upper_block;
+    Temporal_Covariance(start_block:end_block, start_upper_block:end_upper_block) = computed_block;
 
-  parfor upper_block = block:number_of_blocks
+    if block ~= upper_block
+      Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block);
+    end
   end
-
 end 
-Block_i = snapshot_blocks{i}; 
-Block_j = snapshot_blocks{j}; 
+
 
 
 
