@@ -73,11 +73,11 @@ Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
 % resulting POD modes describe how the flow changes or fluctuates over time.
 
 % taking the mean across every column, mean(snapshot_matrix, 1) would take the mean at every row
-mean = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
+mean_matrix = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
 
 % computing the fluctuations u', altough mean is a 9900 by 1 matrix and snapshot_matrix is 9900 by 2499
 % MATLAB will notice that it only has one column an preten it has been repeated to match the snapshot_matrix
-snapshot_fluctuations = Snapshot_matrix - mean;
+snapshot_fluctuations = Snapshot_matrix - mean_matrix;
 
 %% Segment data
 % Because the fluctuations matrix X is huge, loading it all into the memory for matrix multiplication can 
@@ -90,7 +90,7 @@ number_of_blocks = ceil(frames / block_size); % calcualtes how many blocks we wi
 
 % A cell array makes sure that if the last block is smaller than the others, the system wont crash. A cell
 % can hold diffrent sizes of matries whereas normal matrices must be perfectly rectangular.
-Snapshot_blocks = cell(number_of_blocks, 1);
+snapshot_blocks = cell(number_of_blocks, 1);
 
 % We need to perform some logic to tell MATLAB where to start and finish each block
 % it will always be (n * 100) + 1
@@ -125,7 +125,7 @@ for block = 1:number_of_blocks
     Temporal_Covariance(start_block:end_block, start_upper_block:end_upper_block) = computed_block;
 
     if block ~= upper_block
-      Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block);
+      Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block) = computed_block';
     end
   end
 end 
