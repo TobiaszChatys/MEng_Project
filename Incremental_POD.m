@@ -1,7 +1,8 @@
-%% Incremental POD
+%% Incremental POD - Settings
 
-clc, clear, close all,
+clc; clear; close all;
 
+Only_liquid_phase = false;
 
 %% LOAD DATA
 
@@ -14,24 +15,52 @@ frames = size(S.all_u_matrix_liquid, 3);
 
 % obtain the rows and columns of the liquid to setup matrices
 [rows_liquid, columns_liquid, ~] = size(S.all_u_matrix_liquid);
-Spatial_points = rows_liquid * columns_liquid;
+Spatial_points_liquid = rows_liquid * columns_liquid;
 
 % initalise matrices to store vectorised velocity components
-U2_Vectorised = zeros(Spatial_points, frames);
-V2_Vectorised = zeros(Spatial_points, frames);
 
+if Only_liquid_phase
 
-% reshape function: reshape(A, sz), reshapes A using size vector sz, to define the resultant
-% the brackets tell matlab to automatically calculate how many rows are needed to fit all the data
-parfor frame = 1:frames
+   U2_Vectorised = zeros(Spatial_points_liquid, frames);
+   V2_Vectorised = zeros(Spatial_points_liquid, frames);
+  
+  % the brackets tell matlab to automatically calculate how many rows are needed to fit all the data
+  parfor frame = 1:frames
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
-end
-% U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 2499
+  end
+  % U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 2499
+   
+  Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
 
-% Create the snapchot matrix
-Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
-% Snapshot matrix is 9900 by 2499
+else
+
+  [rows_air, columns_air, ~] = size(S.all_u_matrix_air);
+  Spatial_points_air = rows_air * columns_air;
+
+
+  U2_Vectorised = zeros(Spatial_points_liquid, frames);
+  V2_Vectorised = zeros(Spatial_points_liquid, frames);
+  U1_Vectorised = zeros(Spatial_points_air, frames);
+  V1_Vectorised = zeros(Spatial_points_air, frames);
+  % reshape function: reshape(A, sz), reshapes A using size vector sz, to define the resultant
+
+  % reshape function: reshape(A, sz), reshapes A using size vector sz, to define the resultant
+  % the brackets tell matlab to automatically calculate how many rows are needed to fit all the data
+  parfor frame = 1:frames
+    U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
+    V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
+    U1_Vectorised(:, frame) = reshape(S.all_u_matrix_air(:, :, frame), [], 1);
+    V1_Vectorised(:, frame) = reshape(S.all_v_matrix_air(:, :, frame), [], 1);  
+  end
+  % U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 2499
+  
+  % Create the snapchot matrix
+  Snapshot_matrix = [U2_Vectorised; V2_Vectorised; U1_Vectorised; V1_Vectorised];
+  % Snapshot matrix is 9900 by 2499
+
+end
+
 
 % removes all nans from the matrix
 Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
