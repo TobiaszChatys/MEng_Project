@@ -101,6 +101,16 @@ for block = 1:number_of_blocks
   end
 end 
 
+Temporal_Covariance = Temporal_Covariance / frames;
+
+
+%% Eigenvalue Decompositon
+% Now that we have our N by N Temporal_Covariance  matrix, we need to find its eigenvalues and eigenvectors
+% eigenvalues represent the kinetic energy captured by eash modes
+% eigenvectors are the temporal modes, they tell you how the strength of a specific flow strucrure fluctuates
+% over time 
+
+[eigenvectors, eigenvalues] = eig(Temporal_Covariance);
 
 
 
