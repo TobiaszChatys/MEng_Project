@@ -1,35 +1,37 @@
+
 %% Incremental POD - Settings
 
 clc; clear; close all;
 
-Only_liquid_phase = true;
+Only_liquid_phase = false;
 
 %% LOAD DATA
 
-[S, filename] = loadData('L8_G9.mat'); 
+[S, filename] = loadData('L8_G7.mat'); 
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
+% POD Requires 2D matrices, not 3D blocks.
+% So Every frame of the flow field must be flatterned from a 2D grid into a single, 1D column vector
 
-
+% obtain the rows and columns of the liquid to setup matrices
 [rows_liquid, columns_liquid, ~] = size(S.all_u_matrix_liquid);
 Spatial_points_liquid = rows_liquid * columns_liquid;
+
+% initalise matrices to store vectorised velocity components
 
 if Only_liquid_phase
 
    U2_Vectorised = zeros(Spatial_points_liquid, frames);
    V2_Vectorised = zeros(Spatial_points_liquid, frames);
   
+  % the brackets tell matlab to automatically calculate how many rows are needed to fit all the data
   parfor frame = 1:frames
-  
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
-  
   end
-
-
+  % U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 24falsee 
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
-
 
 else
 
@@ -41,59 +43,80 @@ else
   V2_Vectorised = zeros(Spatial_points_liquid, frames);
   U1_Vectorised = zeros(Spatial_points_air, frames);
   V1_Vectorised = zeros(Spatial_points_air, frames);
-  
-  parfor frame = 1:frames
+  % reshape function: reshape(A, sz), reshapes A using size vector sz, to define the resultant
 
+  % reshape function: reshape(A, sz), reshapes A using size vector sz, to define the resultant
+  % the brackets tell matlab to automatically calculate how many rows are needed to fit all the data
+  parfor frame = 1:frames
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
     U1_Vectorised(:, frame) = reshape(S.all_u_matrix_air(:, :, frame), [], 1);
     V1_Vectorised(:, frame) = reshape(S.all_v_matrix_air(:, :, frame), [], 1);  
-  
   end
+  % U2 and V2_Vectorised are 4950 by 2499 meaning once we create the snapshot matrix it should be 9900 by 2499
   
-
+  % Create the snapchot matrix
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised; U1_Vectorised; V1_Vectorised];
-
+  % Snapshot matrix is 9900 by 2499
 
 end
 
 
+% removes all nans from the matrix
 Snapshot_matrix(isnan(Snapshot_matrix)) = 0;
 
 %% Normalisation
+% A flow field can be split into a steady, time average component u dash, and a fluctuating dynamic
+% component u', POD is always perfomed on the fluctuations.
+% By subtracting the time-averaged mean from every sinrle frame, the POD will isolate the moving,
+% turbulent structures rather than just showing static background noise. centering the data, ensuring the
+% resulting POD modes describe how the flow changes or fluctuates over time.
 
-mean_matrix = mean(Snapshot_matrix, 2);
+% taking the mean across every column, mean(snapshot_matrix, 1) would take the mean at every row
+mean_matrix = mean(Snapshot_matrix, 2); % 9900 by 1 matrix needs to be replicated
 
+% computing the fluctuations u', altough mean is a 9900 by 1 matrix and snapshot_matrix is 9900 by 2499
+% MATLAB will notice that it only has one column an preten it has been repeated to match the snapshot_matrix
 snapshot_fluctuations = Snapshot_matrix - mean_matrix;
 
 %% Segment data
+% Because the fluctuations matrix X is huge, loading it all into the memory for matrix multiplication can 
+% slow down the process.
+% so we can process the matrix by loading block by block
 
 block_size = 100; % loading 100 frames at a time
 number_of_blocks = ceil(frames / block_size); % calcualtes how many blocks we will process in total
+% ceil rounds up to make sure there are no left over frames 
 
+% A cell array makes sure that if the last block is smaller than the others, the system wont crash. A cell
+% can hold diffrent sizes of matries whereas normal matrices must be perfectly rectangular.
 snapshot_blocks = cell(number_of_blocks, 1);
 
+% We need to perform some logic to tell MATLAB where to start and finish each block
+% it will always be (n * 100) + 1
 parfor block = 1:number_of_blocks
-
     start_frame = ((block - 1) * block_size) + 1;
+    % The minimum function is a saftey net to make sure if the total number is larger than the total frame 
+    % present, stop at the last frame. preventing index out of bound error.
     end_frame = min(block * block_size, frames);
     snapshot_blocks{block} = snapshot_fluctuations(:, start_frame:end_frame);
-
 end
 
 %% Incremental POD
+% A standard spatial covariance matrix is calculated as C = XX^T. if X has millions of rows, C would
+% be a million by million matrix making it impossible to store
+% Instead you can calculate the temporal covariance matrix X^TX, this results in an N by N matrix
+% 2500 by 2500, (6.25E6) elements 
 
 Temporal_Covariance = zeros(frames, frames);
 
 
 for block = 1:number_of_blocks
-
   start_block = ((block - 1) * block_size) + 1;
   end_block = min(block * block_size, frames);
   current_block = snapshot_blocks{block};
  
   for upper_block = block:number_of_blocks
-
     start_upper_block = ((upper_block - 1) * block_size) + 1;
     end_upper_block = min(upper_block * block_size, frames);
     current_upper_block = snapshot_blocks{upper_block};
@@ -102,9 +125,7 @@ for block = 1:number_of_blocks
     Temporal_Covariance(start_block:end_block, start_upper_block:end_upper_block) = computed_block;
 
     if block ~= upper_block
-
       Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block) = computed_block';
-    
     end
   end
 end 
@@ -113,12 +134,19 @@ Temporal_Covariance = Temporal_Covariance / frames;
 
 
 %% Eigenvalue Decompositon
+% Now that we have our N by N Temporal_Covariance  matrix, we need to find its eigenvalues and eigenvectors
+% eigenvalues represent the kinetic energy captured by eash modes
+% eigenvectors are the temporal modes, they tell you how the strength of a specific flow strucrure fluctuates
+% over time 
 
+% perform eigenvalue Decompositon on the N by N Temporal_Covariance matrix
 [eigenvectors_matrix, eigenvalues_matrix] = eig(Temporal_Covariance);
 eigenvalues_diagonal = diag(eigenvalues_matrix);
 [eigenvalues, sort_index] = sort(eigenvalues_diagonal, 'descend');
 
 sorted_eigenvalues = sort(eigenvalues, 'descend');
+
+% Calculate cumlative energy
 
 total_energy = sum(eigenvalues);
 cumulative_energy = cumsum(eigenvalues) / total_energy;
@@ -126,9 +154,7 @@ thresholds = [0.90, 0.95, 0.99];
 modes_to_retain = zeros(size(thresholds));
 
 parfor threshold = 1:length(thresholds)
-
   modes_to_retain(threshold) = find(cumulative_energy >= thresholds(threshold), 1);
-
 end
 
 %% Plotting
@@ -138,11 +164,9 @@ plot(1:length(cumulative_energy), cumulative_energy(:)' * 100, 'b-', 'Linewidth'
 hold on;
 
 for threshold = 1:length(thresholds)
-
   yline(thresholds(threshold) * 100, '--');
   xline(modes_to_retain(threshold), ':');
   plot(modes_to_retain(threshold), thresholds(threshold) * 100, 'o');
-
 end
 
 
