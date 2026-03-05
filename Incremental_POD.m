@@ -112,7 +112,8 @@ Temporal_Covariance = Temporal_Covariance / frames;
 
 % perform eigenvalue Decompositon on the N by N Temporal_Covariance matrix
 [eigenvectors_matrix, eigenvalues_matrix] = eig(Temporal_Covariance);
-eigenvalues = diag(eigenvalues_matrix);
+eigenvalues_diagonal = diag(eigenvalues_matrix);
+[eigenvalues, sort_index] = sort(eigenvalues_diagonal, 'descend');
 
 sorted_eigenvalues = sort(eigenvalues, 'descend');
 
@@ -121,10 +122,24 @@ sorted_eigenvalues = sort(eigenvalues, 'descend');
 total_energy = sum(eigenvalues);
 cumulative_energy = cumsum(eigenvalues) / total_energy;
 thresholds = [0.90, 0.95, 0.99];
+modes_to_retain = zeros(size(thresholds));
 
 parfor threshold = 1:length(thresholds)
-  modes_to_retain = find(cumulative_energy >= thresholds(threshold), 1);
+  modes_to_retain(threshold) = find(cumulative_energy >= thresholds(threshold), 1);
 end
+
+%% Plotting
+
+
+plot(1:length(cumulative_energy), cumulative_energy(:)' * 100, 'b-', 'Linewidth', 2)
+hold on;
+
+for threshold = 1:length(thresholds)
+  yline(thresholds(threshold) * 100, '--');
+  xline(modes_to_retain(threshold), ':');
+  plot(modes_to_retain(threshold), thresholds(threshold) * 100, 'o');
+end
+
 
 
 
