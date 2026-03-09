@@ -145,22 +145,25 @@ for threshold = 1:length(thresholds)
   
 end
 
+%% Plot time coefficinets for the first 10 modes
 %--TODO: Plot time coefficinets of the first 10 modes,
 %--TODO: Identify the pairs (look for sine/cose sine) that are out of phase
 %--TODO: If they look too messy run the hilbert() command to identify pairs
-%
-
-%% Plot time coefficinets for the first 10 modes
 
 figure('Name', 'Time Coefficients for the first 10 modes')
-t = 1:frames;
+frames_per_second = 1000;
+time_frame = ((1:frames)/1000);
 
 for mode =  1:10
   mode_index = sort_index(mode);
   subplot(5, 2, mode)
-  plot(t,eigenvectors_matrix(:,mode_index));
+  plot(time_frame,eigenvectors_matrix(:,mode_index));
   title('Mode', mode);
   xlabel('Frame')
   ylabel('Mode Coefficient')
+  xlim([0, 1]);
+  yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
 end
+
+
 toc
