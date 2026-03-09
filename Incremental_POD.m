@@ -152,8 +152,15 @@ end
 
 %% Plot time coefficinets for the first 10 modes
 
-figure,
+figure('Name', 'Time Coefficients for the first 10 modes')
 t = 1:frames;
 
-plot(t,eigenvectors_matrix(:,1))
+for mode =  1:10
+  mode_index = sort_index(mode);
+  subplot(5, 2, mode)
+  plot(t,eigenvectors_matrix(:,mode_index));
+  title('Mode', mode);
+  xlabel('Frame')
+  ylabel('Mode Coefficient')
+end
 toc
