@@ -165,5 +165,20 @@ for mode =  1:10
   yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
 end
 
+%% identify pairs via phase plots:
+
+figure('Name', 'Phase plots comparisons')
+
+mode_a = 1;
+mode_b = 2;
+
+plot(time_frame, eigenvectors_matrix(:, sort_index(mode_a)));
+hold on;
+plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)));
+xlabel('Frame')
+ylabel('Mode Coefficient')
+xlim([0, 1]);
+yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
+
 
 toc
