@@ -68,7 +68,7 @@ snapshot_fluctuations = Snapshot_matrix - mean_matrix;
 
 %% Segment data
 
-block_size = 100; % loading 100 frames at a time
+block_size = 350; % loading 100 frames at a time
 number_of_blocks = ceil(frames / block_size); % calcualtes how many blocks we will process in total
 
 snapshot_blocks = cell(number_of_blocks, 1);
@@ -145,4 +145,15 @@ for threshold = 1:length(thresholds)
   
 end
 
+%--TODO: Plot time coefficinets of the first 10 modes,
+%--TODO: Identify the pairs (look for sine/cose sine) that are out of phase
+%--TODO: If they look too messy run the hilbert() command to identify pairs
+%
+
+%% Plot time coefficinets for the first 10 modes
+
+figure,
+t = 1:frames;
+
+plot(t,eigenvectors_matrix(:,1))
 toc

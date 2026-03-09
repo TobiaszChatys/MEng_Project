@@ -1,7 +1,9 @@
 %% import data
 clc; clear; close all;
 
-[S, filename] = loadData('L8_G4.mat'); 
+tic
+
+[S, filename] = loadData('L8_G9.mat');
 frames = size(S.all_u_matrix_liquid, 3);
 
 use_centerline = true; % Set to true to use centerline, false to use fixed column
@@ -15,11 +17,11 @@ half_width = floor(centerline_width / 2);
 X_air_columns =S.all_transposed_x_position_matrix_liquid(1, :);
 
 if use_centerline && use_centerline_width
-    columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
+  columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
 elseif use_centerline
-    columns_to_process = center_column_index; % Process only the center column
+  columns_to_process = center_column_index; % Process only the center column
 else
-    columns_to_process = 1:numel(X_air_columns); % Process all columns
+  columns_to_process = 1:numel(X_air_columns); % Process all columns
 end
 
 %% compute Film height stats
@@ -34,15 +36,15 @@ x_positions_to_use = X_velocity_columns(columns_to_process);  % x-positions we c
 % Find corresponding indices in the film height array
 film_indices_to_use = zeros(size(x_positions_to_use));
 for i = 1:length(x_positions_to_use)
-    [~, film_indices_to_use(i)] = min(abs(Film_x_positions - x_positions_to_use(i)));
+  [~, film_indices_to_use(i)] = min(abs(Film_x_positions - x_positions_to_use(i)));
 end
 
 % Extract film heights only at these x-positions across all frames
 all_film_heights_local = [];
 for frame = 1:frames
-    film_heights_at_columns = Film_height_matrix(film_indices_to_use, frame);
-    valid_heights = film_heights_at_columns(film_heights_at_columns >= 0);
-    all_film_heights_local = [all_film_heights_local; valid_heights];
+  film_heights_at_columns = Film_height_matrix(film_indices_to_use, frame);
+  valid_heights = film_heights_at_columns(film_heights_at_columns >= 0);
+  all_film_heights_local = [all_film_heights_local; valid_heights];
 end
 
 
@@ -92,7 +94,7 @@ color_patch = [144, 122, 169] / 255;  % #907aa9 (purple)
 
 disp(center_column_index)
 disp(x_positions_to_use)
-x_min = min(x_positions_to_use) + 11 
+x_min = min(x_positions_to_use) + 11
 x_max = max(x_positions_to_use) + 11
 
 frame = 10;
@@ -101,7 +103,7 @@ frame = 10;
 quiver(X1 + 11, Y1, U1, V1, 0.8, 'color', color_air);
 hold on;
 quiver(X2 + 11, Y2, U2, V2, 0.8, 'color', color_liquid);
-hold on; 
+hold on;
 
 patch([x_min, x_max, x_max, x_min], [min_film_height, min_film_height, max_film_height, max_film_height], color_patch, 'FaceAlpha', 0.1, 'EdgeColor', 'none');
 plot(X3 + 11, Y3, 'g', 'LineWidth', 4)
@@ -113,7 +115,7 @@ xline(x_min, 'k--', 'LineWidth', 2);
 xline(x_max, 'k--', 'LineWidth', 2);
 xline(center_column_index, 'r--', 'LineWidth', 2);
 for bin = 2:length(bin_edges)-1
-    yline(bin_edges(bin), 'm--', 'LineWidth', 1);
+  yline(bin_edges(bin), 'm--', 'LineWidth', 1);
 end
 
 xlabel('X Position (mm)');
@@ -131,11 +133,11 @@ xline(0, 'k--', 'LineWidth', 2);
 %% create storage for vertical velocity data in each bin
 
 bin_data = repmat(struct( ...
-    "U1", [], ...
-    "V1", [], ...    
-    "U2", [], ...
-    "V2", [] ...
-), number_of_bins, 1);
+  "U1", [], ...
+  "V1", [], ...
+  "U2", [], ...
+  "V2", [] ...
+  ), number_of_bins, 1);
 
 Y_profile_air = Y1(:,1); % store air vertical positions
 Y_profile_liquid = Y2(:,1); % store liquid vertical positions
@@ -154,117 +156,117 @@ temp_U2 = cell(frames, number_of_bins);
 temp_V2 = cell(frames, number_of_bins);
 
 parfor frame = 1:frames
-
-    [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
-
-    fprintf('Processing frame %d/%d...\n', frame, frames);
-
-    X_air_columns = X1(1, :);
-    X_liquid_columns = X2(1, :);
-
-    % per-frame bin containers
-    frame_U1 = cell(1, number_of_bins);
-    frame_V1 = cell(1, number_of_bins);
-    frame_U2 = cell(1, number_of_bins);
-    frame_V2 = cell(1, number_of_bins);
-
-
-    if use_centerline && use_centerline_width
-        columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
-    elseif use_centerline
-        columns_to_process = center_column_index; % Process only the center column
-    else
-        columns_to_process = 1:numel(X_air_columns); % Process all columns
+  
+  [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+  
+  fprintf('Processing frame %d/%d...\n', frame, frames);
+  
+  X_air_columns = X1(1, :);
+  X_liquid_columns = X2(1, :);
+  
+  % per-frame bin containers
+  frame_U1 = cell(1, number_of_bins);
+  frame_V1 = cell(1, number_of_bins);
+  frame_U2 = cell(1, number_of_bins);
+  frame_V2 = cell(1, number_of_bins);
+  
+  
+  if use_centerline && use_centerline_width
+    columns_to_process = center_column_index - half_width : center_column_index + half_width; % Process columns around the centerline
+  elseif use_centerline
+    columns_to_process = center_column_index; % Process only the center column
+  else
+    columns_to_process = 1:numel(X_air_columns); % Process all columns
+  end
+  
+  % air phase
+  for column = columns_to_process
+    x_pos = X_air_columns(column);
+    local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
+    if isnan(local_film_height)
+      continue;
     end
-
-    % air phase
-    for column = columns_to_process
-        x_pos = X_air_columns(column);
-        local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
-        if isnan(local_film_height)
-            continue;
-        end
-        bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
-        if isempty(bin_index) && local_film_height == bin_edges(end)
-            bin_index = number_of_bins; % assign to last bin if equal to max edge
-        elseif isempty(bin_index)
-            continue;
-        end
-
-        U1_column = U1(:, column);
-        V1_column = V1(:, column);
-
-        if isempty(frame_U1{bin_index})
-            frame_U1{bin_index} = U1_column;
-            frame_V1{bin_index} = V1_column;
-        else
-            frame_U1{bin_index} = [frame_U1{bin_index}, U1_column];
-            frame_V1{bin_index} = [frame_V1{bin_index}, V1_column];
-        end
+    bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
+    if isempty(bin_index) && local_film_height == bin_edges(end)
+      bin_index = number_of_bins; % assign to last bin if equal to max edge
+    elseif isempty(bin_index)
+      continue;
     end
     
-
-    if use_centerline && use_centerline_width
-        columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
-    elseif use_centerline
-        columns_to_process = center_column_index; % Process only the center column
+    U1_column = U1(:, column);
+    V1_column = V1(:, column);
+    
+    if isempty(frame_U1{bin_index})
+      frame_U1{bin_index} = U1_column;
+      frame_V1{bin_index} = V1_column;
     else
-        columns_to_process = 1:numel(X_liquid_columns); % Process all columns
+      frame_U1{bin_index} = [frame_U1{bin_index}, U1_column];
+      frame_V1{bin_index} = [frame_V1{bin_index}, V1_column];
     end
-
-    % liquid phase
-    for column = columns_to_process
-        x_pos = X_liquid_columns(column);
-        local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
-        if isnan(local_film_height)
-            continue;
-        end
-        bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
-        if isempty(bin_index) && local_film_height == bin_edges(end)
-            bin_index = number_of_bins; % assign to last bin if equal to max edge
-        elseif isempty(bin_index)
-            continue;
-        end
-
-        U2_column = U2(:, column);
-        V2_column = V2(:, column);
-
-        if isempty(frame_U2{bin_index})
-            frame_U2{bin_index} = U2_column;
-            frame_V2{bin_index} = V2_column;
-        else
-            frame_U2{bin_index} = [frame_U2{bin_index}, U2_column];
-            frame_V2{bin_index} = [frame_V2{bin_index}, V2_column];
-        end
+  end
+  
+  
+  if use_centerline && use_centerline_width
+    columns_to_process = max(1, center_column_index - half_width + 1) : min(50, center_column_index + half_width); % Process columns around the centerline
+  elseif use_centerline
+    columns_to_process = center_column_index; % Process only the center column
+  else
+    columns_to_process = 1:numel(X_liquid_columns); % Process all columns
+  end
+  
+  % liquid phase
+  for column = columns_to_process
+    x_pos = X_liquid_columns(column);
+    local_film_height = interp1(X3, Y3, x_pos, 'linear', 'extrap');
+    if isnan(local_film_height)
+      continue;
     end
-
-    % write per-frame results into temp arrays (sliced by frame)
-    for b = 1:number_of_bins
-        temp_U1{frame, b} = frame_U1{b};
-        temp_V1{frame, b} = frame_V1{b};
-        temp_U2{frame, b} = frame_U2{b};
-        temp_V2{frame, b} = frame_V2{b};
+    bin_index = find(local_film_height >= bin_edges(1:end-1) & local_film_height < bin_edges(2:end), 1);
+    if isempty(bin_index) && local_film_height == bin_edges(end)
+      bin_index = number_of_bins; % assign to last bin if equal to max edge
+    elseif isempty(bin_index)
+      continue;
     end
+    
+    U2_column = U2(:, column);
+    V2_column = V2(:, column);
+    
+    if isempty(frame_U2{bin_index})
+      frame_U2{bin_index} = U2_column;
+      frame_V2{bin_index} = V2_column;
+    else
+      frame_U2{bin_index} = [frame_U2{bin_index}, U2_column];
+      frame_V2{bin_index} = [frame_V2{bin_index}, V2_column];
+    end
+  end
+  
+  % write per-frame results into temp arrays (sliced by frame)
+  for b = 1:number_of_bins
+    temp_U1{frame, b} = frame_U1{b};
+    temp_V1{frame, b} = frame_V1{b};
+    temp_U2{frame, b} = frame_U2{b};
+    temp_V2{frame, b} = frame_V2{b};
+  end
 end
 
 % aggregate per-frame results into bin_data
 for b = 1:number_of_bins
-
-    fprintf('Aggregating data for bin %d/%d...\n', b, number_of_bins);
-    for f = 1:frames
-        if ~isempty(temp_U1{f, b})
-            bin_data(b).U1 = [bin_data(b).U1, temp_U1{f, b}];
-        end
-        if ~isempty(temp_V1{f, b})
-            bin_data(b).V1 = [bin_data(b).V1, temp_V1{f, b}];
-        end
-        if ~isempty(temp_U2{f, b})
-            bin_data(b).U2 = [bin_data(b).U2, temp_U2{f, b}];
-        end
-        if ~isempty(temp_V2{f, b})
-            bin_data(b).V2 = [bin_data(b).V2, temp_V2{f, b}];
-        end
+  
+  fprintf('Aggregating data for bin %d/%d...\n', b, number_of_bins);
+  for f = 1:frames
+    if ~isempty(temp_U1{f, b})
+      bin_data(b).U1 = [bin_data(b).U1, temp_U1{f, b}];
     end
+    if ~isempty(temp_V1{f, b})
+      bin_data(b).V1 = [bin_data(b).V1, temp_V1{f, b}];
+    end
+    if ~isempty(temp_U2{f, b})
+      bin_data(b).U2 = [bin_data(b).U2, temp_U2{f, b}];
+    end
+    if ~isempty(temp_V2{f, b})
+      bin_data(b).V2 = [bin_data(b).V2, temp_V2{f, b}];
+    end
+  end
 end
 
 toc
@@ -272,9 +274,9 @@ toc
 % Check total vectors processed per bin
 fprintf('\n=== Vector Count Summary ===\n');
 for b = 1:number_of_bins
-    n_air = size(bin_data(b).U1, 2);
-    n_liquid = size(bin_data(b).U2, 2);
-    fprintf('Bin %d: Air = %d vectors, Liquid = %d vectors\n', b, n_air, n_liquid);
+  n_air = size(bin_data(b).U1, 2);
+  n_liquid = size(bin_data(b).U2, 2);
+  fprintf('Bin %d: Air = %d vectors, Liquid = %d vectors\n', b, n_air, n_liquid);
 end
 total_air = sum(arrayfun(@(x) size(x.U1, 2), bin_data));
 total_liquid = sum(arrayfun(@(x) size(x.U2, 2), bin_data));
@@ -283,22 +285,22 @@ fprintf('Total: Air = %d, Liquid = %d\n', total_air, total_liquid);
 %% compute conditonal mean profiles for each bin
 
 conditional_means = repmat(struct( ...
-    "U1_mean", [], ...
-    "V1_mean", [], ...
-    "U2_mean", [], ...
-    "V2_mean", [] ...
-), number_of_bins, 1);
+  "U1_mean", [], ...
+  "V1_mean", [], ...
+  "U2_mean", [], ...
+  "V2_mean", [] ...
+  ), number_of_bins, 1);
 
 for bin = 1:number_of_bins
-    if ~isempty(bin_data(bin).U1)
-        conditional_means(bin).U1_mean = mean(bin_data(bin).U1, 2, 'omitnan');
-        conditional_means(bin).V1_mean = mean(bin_data(bin).V1, 2, 'omitnan');
-    end
-
-    if ~isempty(bin_data(bin).U2)
-        conditional_means(bin).U2_mean = mean(bin_data(bin).U2, 2, 'omitnan');
-        conditional_means(bin).V2_mean = mean(bin_data(bin).V2, 2, 'omitnan');
-    end
+  if ~isempty(bin_data(bin).U1)
+    conditional_means(bin).U1_mean = mean(bin_data(bin).U1, 2, 'omitnan');
+    conditional_means(bin).V1_mean = mean(bin_data(bin).V1, 2, 'omitnan');
+  end
+  
+  if ~isempty(bin_data(bin).U2)
+    conditional_means(bin).U2_mean = mean(bin_data(bin).U2, 2, 'omitnan');
+    conditional_means(bin).V2_mean = mean(bin_data(bin).V2, 2, 'omitnan');
+  end
 end
 
 fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
@@ -306,54 +308,54 @@ fprintf('\nComputed conditional mean velocity profiles for all bins.\n');
 %% Calculate velocity fluctuations for each bin
 
 fluctuation_data = repmat(struct( ...
-    "U1_prime", [], ...
-    "V1_prime", [], ...
-    "U2_prime", [], ...
-    "V2_prime", [] ...
-), number_of_bins, 1);
+  "U1_prime", [], ...
+  "V1_prime", [], ...
+  "U2_prime", [], ...
+  "V2_prime", [] ...
+  ), number_of_bins, 1);
 
 fprintf('\nCalculating velocity fluctuations for each bin...\n');
 
 for bin = 1:number_of_bins
-    % Air phase fluctuations
-    if ~isempty(bin_data(bin).U1)
-        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
-        fluctuation_data(bin).U1_prime = bin_data(bin).U1 - conditional_means(bin).U1_mean;
-        fluctuation_data(bin).V1_prime = bin_data(bin).V1 - conditional_means(bin).V1_mean;
-        
-        fprintf('Bin %d Air: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U1, 2));
-    end
+  % Air phase fluctuations
+  if ~isempty(bin_data(bin).U1)
+    % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+    fluctuation_data(bin).U1_prime = bin_data(bin).U1 - conditional_means(bin).U1_mean;
+    fluctuation_data(bin).V1_prime = bin_data(bin).V1 - conditional_means(bin).V1_mean;
     
-    % Liquid phase fluctuations
-    if ~isempty(bin_data(bin).U2)
-        % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
-        fluctuation_data(bin).U2_prime = bin_data(bin).U2 - conditional_means(bin).U2_mean;
-        fluctuation_data(bin).V2_prime = bin_data(bin).V2 - conditional_means(bin).V2_mean;
-        
-        fprintf('Bin %d Liquid: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U2, 2));
-    end
+    fprintf('Bin %d Air: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U1, 2));
+  end
+  
+  % Liquid phase fluctuations
+  if ~isempty(bin_data(bin).U2)
+    % u' = u_inst - u_mean (subtract mean from each instantaneous profile)
+    fluctuation_data(bin).U2_prime = bin_data(bin).U2 - conditional_means(bin).U2_mean;
+    fluctuation_data(bin).V2_prime = bin_data(bin).V2 - conditional_means(bin).V2_mean;
+    
+    fprintf('Bin %d Liquid: %d fluctuation profiles calculated\n', bin, size(bin_data(bin).U2, 2));
+  end
 end
 %% Calculate RMS (root mean square) of fluctuations
 
 rms_fluctuations = repmat(struct( ...
-    "U1_rms", [], ...
-    "V1_rms", [], ...
-    "U2_rms", [], ...
-    "V2_rms", [] ...
-), number_of_bins, 1);
+  "U1_rms", [], ...
+  "V1_rms", [], ...
+  "U2_rms", [], ...
+  "V2_rms", [] ...
+  ), number_of_bins, 1);
 
 for bin = 1:number_of_bins
-    % Air phase RMS
-    if ~isempty(fluctuation_data(bin).U1_prime)
-        rms_fluctuations(bin).U1_rms = sqrt(mean(fluctuation_data(bin).U1_prime.^2, 2, 'omitnan'));
-        rms_fluctuations(bin).V1_rms = sqrt(mean(fluctuation_data(bin).V1_prime.^2, 2, 'omitnan'));
-    end
-    
-    % Liquid phase RMS
-    if ~isempty(fluctuation_data(bin).U2_prime)
-        rms_fluctuations(bin).U2_rms = sqrt(mean(fluctuation_data(bin).U2_prime.^2, 2, 'omitnan'));
-        rms_fluctuations(bin).V2_rms = sqrt(mean(fluctuation_data(bin).V2_prime.^2, 2, 'omitnan'));
-    end
+  % Air phase RMS
+  if ~isempty(fluctuation_data(bin).U1_prime)
+    rms_fluctuations(bin).U1_rms = sqrt(mean(fluctuation_data(bin).U1_prime.^2, 2, 'omitnan'));
+    rms_fluctuations(bin).V1_rms = sqrt(mean(fluctuation_data(bin).V1_prime.^2, 2, 'omitnan'));
+  end
+  
+  % Liquid phase RMS
+  if ~isempty(fluctuation_data(bin).U2_prime)
+    rms_fluctuations(bin).U2_rms = sqrt(mean(fluctuation_data(bin).U2_prime.^2, 2, 'omitnan'));
+    rms_fluctuations(bin).V2_rms = sqrt(mean(fluctuation_data(bin).V2_prime.^2, 2, 'omitnan'));
+  end
 end
 
 fprintf('\nComputed RMS fluctuations for all bins.\n');
@@ -366,30 +368,30 @@ fprintf('\nComputed RMS fluctuations for all bins.\n');
 z_scores = repmat(struct('U2_rms_z', [], 'U2_mean_z', []), number_of_bins, 1);
 
 for bin = 1:number_of_bins
-    x_rms = rms_fluctuations(bin).U2_rms;
-    x_mean = conditional_means(bin).U2_mean;
-
-    mean_rms = mean(x_rms, 'omitnan');
-    mean_mean = mean(x_mean, 'omitnan');
-
-    std_rms = std(x_rms, 'omitnan');
-    std_mean = std(x_mean, 'omitnan');
-
-    z_rms = (x_rms - mean_rms) ./ std_rms;
-    z_mean = (x_mean - mean_mean) ./ std_mean;
-
-    z_scores(bin).U2_rms_z = abs(z_rms);
-    z_scores(bin).U2_mean_z = abs(z_mean);
-
-    x_clean_rms = x_rms;
-    x_clean_mean = x_mean;
-
-    x_clean_rms(abs(z_rms) > 1.3) = NaN; % G4 at 1.4 is crazy
-    x_clean_mean(abs(z_mean) > 2.5) = NaN;
-
-    rms_fluctuations(bin).U2_rms = x_clean_rms;
-    conditional_means(bin).U2_mean = x_clean_mean;
-    
+  x_rms = rms_fluctuations(bin).U2_rms;
+  x_mean = conditional_means(bin).U2_mean;
+  
+  mean_rms = mean(x_rms, 'omitnan');
+  mean_mean = mean(x_mean, 'omitnan');
+  
+  std_rms = std(x_rms, 'omitnan');
+  std_mean = std(x_mean, 'omitnan');
+  
+  z_rms = (x_rms - mean_rms) ./ std_rms;
+  z_mean = (x_mean - mean_mean) ./ std_mean;
+  
+  z_scores(bin).U2_rms_z = abs(z_rms);
+  z_scores(bin).U2_mean_z = abs(z_mean);
+  
+  x_clean_rms = x_rms;
+  x_clean_mean = x_mean;
+  
+  x_clean_rms(abs(z_rms) > 1.3) = NaN; % G4 at 1.4 is crazy
+  x_clean_mean(abs(z_mean) > 2.5) = NaN;
+  
+  rms_fluctuations(bin).U2_rms = x_clean_rms;
+  conditional_means(bin).U2_mean = x_clean_mean;
+  
 end
 
 %% Define plotting parameters and labels
@@ -399,7 +401,7 @@ color_liquid = [49, 116, 143] / 255; % #31748f for liquid phase
 
 bin_labels = cell(1, number_of_bins);
 for bin = 1:number_of_bins
-    bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
+  bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1));
 end
 
 markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^', 'p', 'h', 'v', '<', '>', 's', 'd'}; % Define a marker for each bin
@@ -409,7 +411,7 @@ markers = {'o', '+', '*', '.', 'x', 'square', 'diamond', '^', 'p', 'h', 'v', '<'
 figure,
 
 subplot(1, 2, 1);
-hold on; 
+hold on;
 
 % plot(nan, nan, 'o', 'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', 'none', ...
 %     'LineStyle', 'none', 'DisplayName', 'Liquid Phase (hollow)');
@@ -419,25 +421,25 @@ hold on;
 % Plot liquid phase for all bins (hollow markers)
 
 for bin = 1:number_of_bins
-    if ~isempty(conditional_means(bin).U2_mean)
+  if ~isempty(conditional_means(bin).U2_mean)
     semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-        'MarkerFaceColor', 'none', 'DisplayName', bin_labels{bin});
-    end
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none', 'DisplayName', bin_labels{bin});
+  end
 end
 % Plot air phase for all bins (filled markers)
 for bin = 1:number_of_bins
-    if ~isempty(conditional_means(bin).U1_mean) 
+  if ~isempty(conditional_means(bin).U1_mean)
     semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-        'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
-    end
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
+  end
 end
 
 set(gca, 'XScale', 'log');
 ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
 xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
-ylim([0, 28]); 
+ylim([0, 28]);
 yticks(0:2:28);
 
 
@@ -449,8 +451,8 @@ xlim([0, xlim_value]);
 xticks(xticks_array);
 
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-lgd = legend('FontSize', 9); 
-lgd.Position(1:2) = [0.32, 0.66];  
+lgd = legend('FontSize', 9);
+lgd.Position(1:2) = [0.32, 0.66];
 grid on;
 hold off;
 
@@ -458,19 +460,19 @@ axes('Position', [0.18, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
 box on;
 hold on;
 for bin = 1:number_of_bins
-    if ~isempty(conditional_means(bin).U2_mean)
-        plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none');
-    end
+  if ~isempty(conditional_means(bin).U2_mean)
+    plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none');
+  end
 end
 
 for bin = 1:number_of_bins
-    if ~isempty(conditional_means(bin).U1_mean)
-        plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air);
-    end
+  if ~isempty(conditional_means(bin).U1_mean)
+    plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air);
+  end
 end
 
 liquid_detail_xmax = max(conditional_means(bin).U2_mean) * 1.05; % xlimit with a 5% buffer
@@ -490,28 +492,28 @@ hold on;
 
 % Plot liquid phase RMS fluctuations (filled markers)
 for bin = 1:number_of_bins
-    if ~isempty(rms_fluctuations(bin).U2_rms)
+  if ~isempty(rms_fluctuations(bin).U2_rms)
     semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
-        'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
-        'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
-        'DisplayName', bin_labels{bin});
-    end
+      'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+      'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
+      'DisplayName', bin_labels{bin});
+  end
 end
 
 % Plot air phase RMS fluctuations (hollow markers)
 for bin = 1:number_of_bins
-    if ~isempty(rms_fluctuations(bin).U1_rms) 
+  if ~isempty(rms_fluctuations(bin).U1_rms)
     semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
-        'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
-        'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
-        'HandleVisibility', 'off');
-    end
+      'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+      'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+      'HandleVisibility', 'off');
+  end
 end
 
 set(gca, 'XScale', 'log');
 ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
 xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
-ylim([0, 28]); 
+ylim([0, 28]);
 yticks(0:2:28);
 
 xticks_array = [0.1 0.5 1 5 10 15];
@@ -523,8 +525,8 @@ xticks(xticks_array);
 
 
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-lgd = legend('FontSize', 9); 
-lgd.Position(1:2) = [0.8, 0.7]; 
+lgd = legend('FontSize', 9);
+lgd.Position(1:2) = [0.8, 0.7];
 grid on;
 hold off;
 
@@ -533,18 +535,18 @@ axes('Position', [0.60, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
 box on;
 hold on;
 for bin = 1:number_of_bins
-    if ~isempty(rms_fluctuations(bin).U2_rms)
-        plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none');
-    end
+  if ~isempty(rms_fluctuations(bin).U2_rms)
+    plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none');
+  end
 end
 for bin = 1:number_of_bins
-    if ~isempty(rms_fluctuations(bin).U1_rms)
-        plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air);
-    end
+  if ~isempty(rms_fluctuations(bin).U1_rms)
+    plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air);
+  end
 end
 
 liquid_detail_xmax = max(rms_fluctuations(bin).U2_rms) * 1.05; % xlimit with a 5% buffer
@@ -579,7 +581,7 @@ hold on;
 
 % bin_labels = cell(1, number_of_bins);
 % for bin = 1:number_of_bins
-%     bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1)); 
+%     bin_labels{bin} = sprintf('Bin %d: %.2f - %.2f mm', bin, bin_edges(bin), bin_edges(bin+1));
 % end
 
 Analysis_bins = [min_bin, median_bin, max_bin];
@@ -587,43 +589,43 @@ number_of_analysis_bins = length(Analysis_bins);
 analysis_bin_labels = cell(1, number_of_analysis_bins);
 
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if bin == min_bin
-        label_type = 'min';
-    elseif bin == median_bin
-        label_type = 'median';
-    else
-        label_type = 'max';
-    end
-    analysis_bin_labels{index} = sprintf('Bin %d: %.2f - %.2f mm (%s)', bin, bin_edges(bin), bin_edges(bin+1), label_type);
+  bin = Analysis_bins(index);
+  if bin == min_bin
+    label_type = 'min';
+  elseif bin == median_bin
+    label_type = 'median';
+  else
+    label_type = 'max';
+  end
+  analysis_bin_labels{index} = sprintf('Bin %d: %.2f - %.2f mm (%s)', bin, bin_edges(bin), bin_edges(bin+1), label_type);
 end
 
 % Plot liquid phase for all bins (hollow markers)
 
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(conditional_means(bin).U2_mean)
+  bin = Analysis_bins(index);
+  if ~isempty(conditional_means(bin).U2_mean)
     semilogx(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-        'MarkerFaceColor', 'none', 'DisplayName', analysis_bin_labels{index});
-    end
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none', 'DisplayName', analysis_bin_labels{index});
+  end
 end
 
 % Plot air phase for all bins (filled markers)
 
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(conditional_means(bin).U1_mean)
+  bin = Analysis_bins(index);
+  if ~isempty(conditional_means(bin).U1_mean)
     semilogx(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
-        markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-        'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
-    end
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air, 'HandleVisibility', 'off');
+  end
 end
 
 set(gca, 'XScale', 'log');
 ylabel('Y Position (mm)', 'FontSize', 12, 'Interpreter', 'latex');
 xlabel('$\overline{u}_{(x_0,y)}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
-ylim([0, 28]); 
+ylim([0, 28]);
 yticks(0:2:28);
 
 xticks_array = [0.1 0.5 1 5 10 15];
@@ -634,8 +636,8 @@ xlim([0, xlim_value]);
 xticks(xticks_array);
 
 title(sprintf('Mean Velocity Profiles With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-lgd = legend('FontSize', 9); 
-lgd.Position(1:2) = [0.32, 0.66];  
+lgd = legend('FontSize', 9);
+lgd.Position(1:2) = [0.32, 0.66];
 grid on;
 hold off;
 
@@ -644,21 +646,21 @@ box on;
 hold on;
 
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(conditional_means(bin).U2_mean)
-        plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none');
-    end
+  bin = Analysis_bins(index);
+  if ~isempty(conditional_means(bin).U2_mean)
+    plot(conditional_means(bin).U2_mean, Y_profile_liquid, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none');
+  end
 end
 
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(conditional_means(bin).U1_mean)
-        plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air);
-    end
+  bin = Analysis_bins(index);
+  if ~isempty(conditional_means(bin).U1_mean)
+    plot(conditional_means(bin).U1_mean, Y_profile_air, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air);
+  end
 end
 
 liquid_detail_xmax = max(conditional_means(bin).U2_mean) * 1.05; % xlimit with a 5% buffer
@@ -678,30 +680,30 @@ hold on;
 
 % Plot liquid phase RMS fluctuations (filled markers)
 for index = 1:number_of_analysis_bins
-bin = Analysis_bins(index);
-    if ~isempty(rms_fluctuations(bin).U2_rms)
+  bin = Analysis_bins(index);
+  if ~isempty(rms_fluctuations(bin).U2_rms)
     semilogx(rms_fluctuations(bin).U2_rms, Y_profile_liquid, ...
-        'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
-        'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
-        'DisplayName', analysis_bin_labels{index});
-    end
+      'Color', color_liquid, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+      'MarkerEdgeColor', color_liquid, 'MarkerFaceColor', "none", ...
+      'DisplayName', analysis_bin_labels{index});
+  end
 end
 
 % Plot air phase RMS fluctuations (hollow markers)
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(rms_fluctuations(bin).U1_rms) 
+  bin = Analysis_bins(index);
+  if ~isempty(rms_fluctuations(bin).U1_rms)
     semilogx(rms_fluctuations(bin).U1_rms, Y_profile_air, ...
-        'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
-        'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
-        'HandleVisibility', 'off');
-    end
+      'Color', color_air, 'Marker', markers{bin}, 'LineStyle', 'none', ...
+      'MarkerEdgeColor', color_air, 'MarkerFaceColor', color_air, ...
+      'HandleVisibility', 'off');
+  end
 end
 
 set(gca, 'XScale', 'log');
 ylabel('Y Position (mm)', 'FontSize', 12,'Interpreter', 'latex');
 xlabel('$u''_{(x_0,y),rms}$ (ms$^{-1}$)', 'FontSize', 12, 'Interpreter', 'latex');
-ylim([0, 28]); 
+ylim([0, 28]);
 yticks(0:2:28);
 
 xticks_array = [0.1 0.5 1 5 10 15];
@@ -711,7 +713,7 @@ xlim_value = findXlimFromXticks(max_x, xticks_array);
 xlim([0, xlim_value]);
 xticks(xticks_array);
 title(sprintf('RMS Fluctuations With Bins Containing %d Vectors Each', number_of_vecors_in_bin), 'FontSize', 14);
-lgd = legend('FontSize', 9); 
+lgd = legend('FontSize', 9);
 lgd.Position(1:2) = [0.8, 0.7];
 grid on;
 hold off;
@@ -721,20 +723,20 @@ axes('Position', [0.60, 0.5, 0.15, 0.3]); % [left, bottom, width, height]
 box on;
 hold on;
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(rms_fluctuations(bin).U2_rms)
-        plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
-            'MarkerFaceColor', 'none');
-    end
+  bin = Analysis_bins(index);
+  if ~isempty(rms_fluctuations(bin).U2_rms)
+    plot(rms_fluctuations(bin).U2_rms, Y_profile_liquid, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_liquid, ...
+      'MarkerFaceColor', 'none');
+  end
 end
 for index = 1:number_of_analysis_bins
-    bin = Analysis_bins(index);
-    if ~isempty(rms_fluctuations(bin).U1_rms)
-        plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
-            markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
-            'MarkerFaceColor', color_air);
-    end
+  bin = Analysis_bins(index);
+  if ~isempty(rms_fluctuations(bin).U1_rms)
+    plot(rms_fluctuations(bin).U1_rms, Y_profile_air, 'Marker', ...
+      markers{bin}, 'LineStyle', 'none', 'MarkerEdgeColor', color_air, ...
+      'MarkerFaceColor', color_air);
+  end
 end
 
 liquid_detail_xmax = max(rms_fluctuations(bin).U2_rms) * 1.05; % xlimit with a 5% buffer
@@ -748,3 +750,5 @@ xlabel('$u''_{rms}$ (ms$^{-1}$)', 'FontSize', 9, 'Interpreter', 'latex');
 ylabel('Y (mm)', 'FontSize', 9, 'Interpreter', 'latex');
 title('Liquid Phase Detail', 'FontSize', 9);
 hold off;
+
+toc
