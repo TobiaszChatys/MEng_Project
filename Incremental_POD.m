@@ -177,8 +177,16 @@ hold on;
 plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)));
 xlabel('Frame')
 ylabel('Mode Coefficient')
-xlim([0, 1]);
+xlim([0, 0.5]);
 yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
+hold off;
+% Hilbert Transforms:
 
 
+Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode_a)));
+Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode_b)));
+
+phase_diffrence = rad2deg(unwrap(angle(Hilbert_mode_a) - angle(Hilbert_mode_b)));
+
+plot(time_frame, phase_diffrence)
 toc
