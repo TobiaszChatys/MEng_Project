@@ -1,12 +1,12 @@
 %% Incremental POD - Settings
-
+tic
 clc; clear; close all;
 
 Only_liquid_phase = true;
 
 %% LOAD DATA
 
-[S, filename] = loadData('L8_G9.mat'); 
+[S, filename] = loadData('L8_G9.mat');
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -16,45 +16,45 @@ frames = size(S.all_u_matrix_liquid, 3);
 Spatial_points_liquid = rows_liquid * columns_liquid;
 
 if Only_liquid_phase
-
-   U2_Vectorised = zeros(Spatial_points_liquid, frames);
-   V2_Vectorised = zeros(Spatial_points_liquid, frames);
+  
+  U2_Vectorised = zeros(Spatial_points_liquid, frames);
+  V2_Vectorised = zeros(Spatial_points_liquid, frames);
   
   parfor frame = 1:frames
-  
+    
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
-  
+    
   end
-
-
+  
+  
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
-
-
+  
+  
 else
-
+  
   [rows_air, columns_air, ~] = size(S.all_u_matrix_air);
   Spatial_points_air = rows_air * columns_air;
-
-
+  
+  
   U2_Vectorised = zeros(Spatial_points_liquid, frames);
   V2_Vectorised = zeros(Spatial_points_liquid, frames);
   U1_Vectorised = zeros(Spatial_points_air, frames);
   V1_Vectorised = zeros(Spatial_points_air, frames);
   
   parfor frame = 1:frames
-
+    
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
     V2_Vectorised(:, frame) = reshape(S.all_v_matrix_liquid(:, :, frame), [], 1);
     U1_Vectorised(:, frame) = reshape(S.all_u_matrix_air(:, :, frame), [], 1);
-    V1_Vectorised(:, frame) = reshape(S.all_v_matrix_air(:, :, frame), [], 1);  
-  
+    V1_Vectorised(:, frame) = reshape(S.all_v_matrix_air(:, :, frame), [], 1);
+    
   end
   
-
+  
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised; U1_Vectorised; V1_Vectorised];
-
-
+  
+  
 end
 
 
@@ -74,11 +74,11 @@ number_of_blocks = ceil(frames / block_size); % calcualtes how many blocks we wi
 snapshot_blocks = cell(number_of_blocks, 1);
 
 parfor block = 1:number_of_blocks
-
-    start_frame = ((block - 1) * block_size) + 1;
-    end_frame = min(block * block_size, frames);
-    snapshot_blocks{block} = snapshot_fluctuations(:, start_frame:end_frame);
-
+  
+  start_frame = ((block - 1) * block_size) + 1;
+  end_frame = min(block * block_size, frames);
+  snapshot_blocks{block} = snapshot_fluctuations(:, start_frame:end_frame);
+  
 end
 
 %% Incremental POD
@@ -87,27 +87,27 @@ Temporal_Covariance = zeros(frames, frames);
 
 
 for block = 1:number_of_blocks
-
+  
   start_block = ((block - 1) * block_size) + 1;
   end_block = min(block * block_size, frames);
   current_block = snapshot_blocks{block};
- 
+  
   for upper_block = block:number_of_blocks
-
+    
     start_upper_block = ((upper_block - 1) * block_size) + 1;
     end_upper_block = min(upper_block * block_size, frames);
     current_upper_block = snapshot_blocks{upper_block};
     
     computed_block = current_block' * current_upper_block;
     Temporal_Covariance(start_block:end_block, start_upper_block:end_upper_block) = computed_block;
-
-    if block ~= upper_block
-
-      Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block) = computed_block';
     
+    if block ~= upper_block
+      
+      Temporal_Covariance(start_upper_block:end_upper_block, start_block:end_block) = computed_block';
+      
     end
   end
-end 
+end
 
 Temporal_Covariance = Temporal_Covariance / frames;
 
@@ -126,33 +126,23 @@ thresholds = [0.90, 0.95, 0.99];
 modes_to_retain = zeros(size(thresholds));
 
 parfor threshold = 1:length(thresholds)
-
+  
   modes_to_retain(threshold) = find(cumulative_energy >= thresholds(threshold), 1);
-
+  
 end
 
 %% Plotting
-
+%--TODO: Add x and y labels as well as a legend
 
 plot(1:length(cumulative_energy), cumulative_energy(:)' * 100, 'b-', 'Linewidth', 2)
 hold on;
 
 for threshold = 1:length(thresholds)
-
+  
   yline(thresholds(threshold) * 100, '--');
   xline(modes_to_retain(threshold), ':');
   plot(modes_to_retain(threshold), thresholds(threshold) * 100, 'o');
-
+  
 end
 
-
-
-
-
-
-
-
-
-
-
-
+toc
