@@ -5,8 +5,10 @@ clc; clear; close all;
 Only_liquid_phase = true;
 
 %% LOAD DATA
-
-[S, filename] = loadData('L8_G9.mat');
+% --NOTE: L8_G4: -87.4393 (mode 1 & 2)
+% --NOTE: l8_G5: -86.8879 (mode 1 & 2)
+% --NOTE: l8_G6: -84.5057 (mode 1 & 2)
+[S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -167,26 +169,31 @@ end
 
 %% identify pairs via phase plots:
 
+% Hilbert Transforms:
+
+figure,
+Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode_a)));
+Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode_b)));
+
+phase_diffrence = rad2deg(angle(Hilbert_mode_a ./ Hilbert_mode_b));
+average_phase_shift = median(phase_diffrence);
+disp(average_phase_shift);
+
+% Plotting pairs
 figure('Name', 'Phase plots comparisons')
 
 mode_a = 1;
 mode_b = 2;
 
-plot(time_frame, eigenvectors_matrix(:, sort_index(mode_a)));
+plot(time_frame, eigenvectors_matrix(:, sort_index(mode_a)), 'DisplayName', ['Mode', num2str(mode_a)]);
 hold on;
-plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)));
+plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)), 'DisplayName', ['Mode', num2str(mode_b)]);
 xlabel('Frame')
 ylabel('Mode Coefficient')
 xlim([0, 0.5]);
 yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
-hold off;
-% Hilbert Transforms:
+title(sprintf('Mode %d Vs Mode %d with a phase shift of %.3f', mode_a, mode_b, average_phase_shift));
+legend('FontSize', 9)
 
-
-Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode_a)));
-Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode_b)));
-
-phase_diffrence = rad2deg(unwrap(angle(Hilbert_mode_a) - angle(Hilbert_mode_b)));
-
-plot(time_frame, phase_diffrence)
 toc
+
