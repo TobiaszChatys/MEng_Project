@@ -8,7 +8,7 @@ Only_liquid_phase = true;
 % --NOTE: L8_G4: -87.4393 (mode 1 & 2)
 % --NOTE: l8_G5: -86.8879 (mode 1 & 2)
 % --NOTE: l8_G6: -84.5057 (mode 1 & 2)
-[S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
+[S, filename] = loadData(fullfile('Cases/','L8_G1.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -166,12 +166,11 @@ for mode =  1:10
   xlim([0, 1]);
   yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
 end
-
+hold off;
 %% identify pairs via phase plots:
 
 % Hilbert Transforms:
 
-figure,
 Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode_a)));
 Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode_b)));
 
@@ -182,18 +181,27 @@ disp(average_phase_shift);
 % Plotting pairs
 figure('Name', 'Phase plots comparisons')
 
-mode_a = 1;
-mode_b = 2;
+mode_a = 9;
+mode_b = 10;
 
-plot(time_frame, eigenvectors_matrix(:, sort_index(mode_a)), 'DisplayName', ['Mode', num2str(mode_a)]);
-hold on;
-plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)), 'DisplayName', ['Mode', num2str(mode_b)]);
-xlabel('Frame')
-ylabel('Mode Coefficient')
-xlim([0, 0.5]);
-yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
-title(sprintf('Mode %d Vs Mode %d with a phase shift of %.3f', mode_a, mode_b, average_phase_shift));
-legend('FontSize', 9)
-
+for mode = 1:10
+  Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode)));
+  Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode + 1)));
+  
+  phase_diffrence = rad2deg(angle(Hilbert_mode_a ./ Hilbert_mode_b));
+  average_phase_shift = median(phase_diffrence);
+  disp(average_phase_shift);
+  
+  figure,
+  plot(time_frame, eigenvectors_matrix(:, sort_index(mode)), 'DisplayName', ['Mode', num2str(mode_a)]);
+  hold on;
+  plot(time_frame, eigenvectors_matrix(:, sort_index(mode + 1)), 'DisplayName', ['Mode', num2str(mode_b)]);
+  xlabel('Frame')
+  ylabel('Mode Coefficient')
+  xlim([0, 0.5]);
+  yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
+  title(sprintf('Mode %d Vs Mode %d with a phase shift of %.3f for case: %s', mode, mode + 1, average_phase_shift, filename));
+  legend('FontSize', 9)
+end
 toc
 
