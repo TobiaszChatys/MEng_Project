@@ -1,11 +1,13 @@
 %% Incremental POD - Settings
 tic
 clc; clear; close all;
+addpath('scripts/');
+addpath('data/Cases/');
 
 Only_liquid_phase = true;
 
 %% LOAD DATA
-[S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
+[S, filename] = loadData(fullfile('Cases/','L8_G12.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -18,7 +20,6 @@ if Only_liquid_phase
   
   U2_Vectorised = zeros(Spatial_points_liquid, frames);
   V2_Vectorised = zeros(Spatial_points_liquid, frames);
-  
   parfor frame = 1:frames
     
     U2_Vectorised(:, frame) = reshape(S.all_u_matrix_liquid(:, :, frame), [], 1);
@@ -26,15 +27,12 @@ if Only_liquid_phase
     
   end
   
-  
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised];
-  
   
 else
   
   [rows_air, columns_air, ~] = size(S.all_u_matrix_air);
   Spatial_points_air = rows_air * columns_air;
-  
   
   U2_Vectorised = zeros(Spatial_points_liquid, frames);
   V2_Vectorised = zeros(Spatial_points_liquid, frames);
@@ -50,9 +48,7 @@ else
     
   end
   
-  
   Snapshot_matrix = [U2_Vectorised; V2_Vectorised; U1_Vectorised; V1_Vectorised];
-  
   
 end
 
@@ -129,6 +125,23 @@ parfor threshold = 1:length(thresholds)
   modes_to_retain(threshold) = find(cumulative_energy >= thresholds(threshold), 1);
   
 end
+
+%% Calcuate spaital modes
+number_of_modes_at_99 = find(cumulative_energy >= 0.99, 1);
+Spatial_modes = snapshot_fluctuations * eigenvectors_matrix(:, sort_index(1:number_of_modes_at_99));
+
+for mode = 1:number_of_modes_at_99
+  Spatial_modes(:,mode) = Spatial_modes(:,mode) / norm(Spatial_modes(:,mode));
+  
+end
+
+%% Saving results
+
+results_directory = 'Results/POD_data';
+if ~exist(results_directory, 'dir'), mkdir(results_directory); end
+[~, base_name, ~] = fileparts(filename);
+save_path = fullfile(results_directory, ['POD_Results_', base_name, '.mat']);
+save(save_path, 'mean_matrix', 'eigenvectors_matrix','eigenvalues', 'Spatial_modes','sort_index','cumulative_energy','rows_liquid', 'columns_liquid', 'Only_liquid_phase', 'filename','number_of_modes_at_99', '-v7.3');
 
 %% Plotting
 %--TODO: Add x and y labels as well as a legend

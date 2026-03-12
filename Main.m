@@ -1,11 +1,12 @@
 clear; clc; close all
-
+addpath('src/')
+addpath('data/')
 % Load data
-[S, filename] = loadData(fullfile('Cases/','L8_G9.mat'));  % Pass the filename directly as a string
+[s, filename] = loadData('L8_G9.mat');  % Pass the filename directly as a string
 frame = 10;
 
 %Get all data at once
-[X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+[X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(s, frame);
 
 %% Create masks
 [Z1_masked, Z2_masked] = createMasks(X1, Y1, X2, Y2, Z1, Z2, X3, Y3);
