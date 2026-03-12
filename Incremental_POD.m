@@ -5,9 +5,6 @@ clc; clear; close all;
 Only_liquid_phase = true;
 
 %% LOAD DATA
-% --NOTE: L8_G4: -87.4393 (mode 1 & 2)
-% --NOTE: l8_G5: -86.8879 (mode 1 & 2)
-% --NOTE: l8_G6: -84.5057 (mode 1 & 2)
 [S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 

@@ -1,36 +1,33 @@
 function animateVelocityVectors(S, frames, videoWriter, fig)
 
-    isCapturing = exist('videoWriter', 'var');
+    if nargin < 4 || isempty(fig)
+        fig = gcf;
+    end
+    
+    isCapturing = exist('videoWriter', 'var') && ~isempty(videoWriter);
+    
+    % Initialize handles
+    ax1 = []; ax2 = []; h = struct();
 
     for frame = 1:frames
-
-        fig = figure(fig);
+        if ~isvalid(fig)
+            break;
+        end
+        
         [X1, Y1, U1, V1, Z1, X2, Y2, U2, V2, Z2, X3, Y3] = getData(S, frame);
+        [Z1_masked, Z2_masked] = createMasks(X1, Y1, X2, Y2, Z1, Z2, X3, Y3);
         
-        quiver(X1 + 11, Y1, U1, V1, 0.8, 'k');
-        hold on;
-        quiver(X2 + 11, Y2, U2, V2, 0.8, 'b');
-        hold on; 
-        plot(X3 + 11, Y3, 'g', 'LineWidth', 4)
-        hold off;
-
-        xlabel('X Position (mm)');
-        ylabel('Y Position (mm)');
-        title(sprintf('L8-G3 Velocity Vector Map - Frame %d', frame));
+        % Update graphics objects smoothly
+        [ax1, ax2, h] = plotVectorMap(X1, Y1, U1, V1, X2, Y2, U2, V2, X3, Y3, Z1_masked, Z2_masked, ax1, ax2, h);
         
-        xlim([-15 15]);
-        ylim([0 28]);
-
-        y_ticks = 0:2:28;
-        yticks(y_ticks);
-        yticklabels(y_ticks)
-        xline(0, 'k--', 'LineWidth', 2);
-
+        title(ax2, sprintf('Velocity Vector Map - Frame %d', frame));
+        
         if isCapturing
             frameCapture = getframe(fig);
             writeVideo(videoWriter, frameCapture);
         else
-            pause(1/60);  % 60 fps
+            drawnow limitrate;
+            pause(0.01); 
         end
     end
 end

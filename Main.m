@@ -1,7 +1,7 @@
 clear; clc; close all
 
 % Load data
-[S, filename] = loadData('L8_G9.mat');  % Pass the filename directly as a string
+[S, filename] = loadData(fullfile('Cases/','L8_G9.mat'));  % Pass the filename directly as a string
 frame = 10;
 
 %Get all data at once
@@ -14,7 +14,7 @@ frame = 10;
 plotVectorMap(X1, Y1, U1, V1, X2, Y2, U2, V2, X3, Y3, Z1_masked, Z2_masked);
 
 %% Animate Velocity Vectors
-frames = 100;
+frames = 300;
 animateVelocityVectors(S, frames);
 
 %% Capture frames to create GIF
