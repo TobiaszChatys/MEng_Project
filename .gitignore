@@ -1,6 +1,9 @@
 *.mat
 *.mp4
 *.md
+!/README.md
 scratchpad/
 Results/
 docs/
+__pycache__/
+.venv/
