@@ -7,7 +7,7 @@ addpath('data/Cases/');
 Only_liquid_phase = true;
 
 %% LOAD DATA
-[S, filename] = loadData(fullfile('Cases/','L8_G12.mat'));
+[S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
