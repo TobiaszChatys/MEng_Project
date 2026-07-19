@@ -4,7 +4,7 @@
 
 clear; clc; close all;
 addpath('src/');
-addpath('data/');
+addpath('data/Cases/');
 
 % 1. Load the dataset
 fprintf('Loading data...\n');
