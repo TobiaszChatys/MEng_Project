@@ -1,7 +1,10 @@
 %% setup
 
 clc; clear; close all;
-data = load('Results/POD_data/POD_Results_L8_G6.mat');
+
+SCRIPT_DIR = fileparts(mfilename('fullpath'));
+PROJ_ROOT  = fileparts(SCRIPT_DIR);
+data = load(fullfile(PROJ_ROOT, 'scripts', 'Results', 'POD_data', 'POD_Results_L8_G6.mat'));
 energy = data.cumulative_energy;
 
 %% color
@@ -15,13 +18,16 @@ figure,
 plot(1:length(energy), energy(:)' * 100,'Color', color_liquid, 'Linewidth', 2)
 hold on;
 
-thresholds =[0.90, 0.95, 0.99];
+thresholds = [0.90, 0.95, 0.99];
 
 for threshold = 1:length(thresholds)
-  
+
+  modes_to_retain = find(energy >= thresholds(threshold), 1);
   yline(thresholds(threshold) * 100, '--');
-  xline(energy(threshold), '--');
-  plot(energy(threshold), thresholds(threshold) * 100, 'o');
-  
+  xline(modes_to_retain, ':');
+  plot(modes_to_retain, thresholds(threshold) * 100, 'o');
+
 end
 
+xlabel('Mode Number');
+ylabel('Cumulative Energy (%)');

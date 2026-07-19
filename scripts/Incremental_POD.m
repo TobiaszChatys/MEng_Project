@@ -1,13 +1,15 @@
 %% Incremental POD - Settings
 tic
 clc; clear; close all;
-addpath('scripts/');
-addpath('data/Cases/');
+
+SCRIPT_DIR = fileparts(mfilename('fullpath'));
+PROJ_ROOT  = fileparts(SCRIPT_DIR);
+addpath(fullfile(PROJ_ROOT, 'src'));
 
 Only_liquid_phase = true;
 
 %% LOAD DATA
-[S, filename] = loadData(fullfile('Cases/','L8_G6.mat'));
+[S, filename] = loadData(fullfile(PROJ_ROOT, 'data', 'Cases', 'L8_G6.mat'));
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -137,7 +139,7 @@ end
 
 %% Saving results
 
-results_directory = 'Results/POD_data';
+results_directory = fullfile(SCRIPT_DIR, 'Results', 'POD_data');
 if ~exist(results_directory, 'dir'), mkdir(results_directory); end
 [~, base_name, ~] = fileparts(filename);
 save_path = fullfile(results_directory, ['POD_Results_', base_name, '.mat']);
@@ -179,10 +181,13 @@ end
 hold off;
 %% identify pairs via phase plots:
 
-% Hilbert Transforms:
+mode_a = 1;
+mode_b = 2;
 
-Hilbert_mode_a = hilbert(eigenvectors_matrix(:, sort_index(mode_a)));
-Hilbert_mode_b = hilbert(eigenvectors_matrix(:, sort_index(mode_b)));
+% hilbert via fft so it works without the signal processing toolbox
+
+Hilbert_mode_a = hilbert_fft(eigenvectors_matrix(:, sort_index(mode_a)));
+Hilbert_mode_b = hilbert_fft(eigenvectors_matrix(:, sort_index(mode_b)));
 
 phase_diffrence = rad2deg(angle(Hilbert_mode_a ./ Hilbert_mode_b));
 average_phase_shift = median(phase_diffrence);
@@ -191,9 +196,6 @@ disp(average_phase_shift);
 % Plotting pairs
 figure('Name', 'Phase plots comparisons')
 
-mode_a = 1;
-mode_b = 2;
-
 plot(time_frame, eigenvectors_matrix(:, sort_index(mode_a)), 'DisplayName', ['Mode', num2str(mode_a)]);
 hold on;
 plot(time_frame, eigenvectors_matrix(:, sort_index(mode_b)), 'DisplayName', ['Mode', num2str(mode_b)]);
@@ -201,8 +203,23 @@ xlabel('Frame')
 ylabel('Mode Coefficient')
 xlim([0, 0.5]);
 yticks([-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08])
-title(sprintf('Mode %d Vs Mode %d with a phase shift of %.3f for case: %s', mode, mode + 1, average_phase_shift, filename));
+title(sprintf('Mode %d Vs Mode %d with a phase shift of %.3f for case: %s', mode_a, mode_b, average_phase_shift, base_name), 'Interpreter', 'none');
 legend('FontSize', 9)
 
 toc
+
+%% hilbert transform helper, fft based so no toolbox needed
+function h = hilbert_fft(x)
+N = length(x);
+Xf = fft(x);
+H = zeros(N, 1);
+H(1) = 1;
+if mod(N,2) == 0
+  H(N/2+1) = 1;
+  H(2:N/2) = 2;
+else
+  H(2:(N+1)/2) = 2;
+end
+h = ifft(Xf .* H);
+end
 
