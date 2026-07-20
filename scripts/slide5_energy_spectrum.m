@@ -15,7 +15,6 @@
 
 tic
 clc; close all;
-addpath(genpath('src'));
 
 %% ── Settings ─────────────────────────────────────────────────────────
 CASES = {
@@ -25,9 +24,13 @@ CASES = {
   'L8_G9',  '9 m s$^{-1}$  (Disturbance)';
   };
 
-DATA_DIR    = fullfile('data',    'Cases');
-RESULTS_DIR = fullfile('scripts', 'Results', 'POD_data');
-OUT_DIR     = fullfile('scripts', 'slide4_output');
+SCRIPT_DIR  = fileparts(mfilename('fullpath'));
+PROJ_ROOT   = fileparts(SCRIPT_DIR);
+addpath(genpath(fullfile(PROJ_ROOT, 'src')));
+
+DATA_DIR    = fullfile(PROJ_ROOT,  'data', 'Cases');
+RESULTS_DIR = fullfile(SCRIPT_DIR, 'Results', 'POD_data');
+OUT_DIR     = fullfile(SCRIPT_DIR, 'slide4_output');
 if ~exist(RESULTS_DIR, 'dir'), mkdir(RESULTS_DIR); end
 if ~exist(OUT_DIR,     'dir'), mkdir(OUT_DIR);     end
 
