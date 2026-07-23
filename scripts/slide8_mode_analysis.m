@@ -12,18 +12,21 @@
 %           scripts/slide8_output/<CASE>_mode_pair.fig
 
 tic; clc; close all;
-addpath(genpath('src'));
 
 %% ── Settings ─────────────────────────────────────────────────────────
 CASE_NAME   = 'L8_G6';
 MODE_A      = 1;               % first mode in pair
 MODE_B      = 2;               % second mode in pair
-FS          = 1000;            % PIV sampling rate (Hz)
 XLIM_SEC    = [0 0.5];        % time window to display (seconds)
 FIG_SIZE    = [50 50 1920 1080];
 
 SCRIPT_DIR  = fileparts(mfilename('fullpath'));
 PROJ_ROOT   = fileparts(SCRIPT_DIR);
+addpath(fullfile(PROJ_ROOT, 'src'));
+
+% sampling rate comes from the case config, not all cases are 1000hz
+case_info   = caseConfig(CASE_NAME);
+FS          = case_info.fs;
 DATA_DIR    = fullfile(PROJ_ROOT, 'data', 'Cases');
 POD_DIR     = fullfile(SCRIPT_DIR, 'Results', 'POD_data');
 OUT_DIR     = fullfile(SCRIPT_DIR, 'slide8_output');

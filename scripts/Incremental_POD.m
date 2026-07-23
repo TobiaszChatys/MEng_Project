@@ -9,7 +9,9 @@ addpath(fullfile(PROJ_ROOT, 'src'));
 Only_liquid_phase = true;
 
 %% LOAD DATA
-[S, filename] = loadData(fullfile(PROJ_ROOT, 'data', 'Cases', 'L8_G6.mat'));
+case_name = 'L8_G6';
+[S, case_meta] = loadCase(case_name);
+filename = [case_name '.mat'];
 frames = size(S.all_u_matrix_liquid, 3);
 
 %% Vectorisation
@@ -165,8 +167,8 @@ end
 %--TODO: If they look too messy run the hilbert() command to identify pairs
 
 figure('Name', 'Time Coefficients for the first 10 modes')
-frames_per_second = 1000;
-time_frame = ((1:frames)/1000);
+frames_per_second = case_meta.fs;   % from the case config, not hardcoded anymore
+time_frame = ((1:frames)/frames_per_second);
 
 for mode =  1:10
   mode_index = sort_index(mode);
