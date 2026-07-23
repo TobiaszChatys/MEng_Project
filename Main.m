@@ -1,8 +1,8 @@
 clear; clc; close all
 addpath('src/')
-addpath('data/Cases/')
 % Load data
-[S, filename] = loadData('L8_G9.mat');  % Pass the filename directly as a string
+[S, meta] = loadCase('L8_G9');
+filename = [meta.name '.mat'];
 frame = 10;
 
 %Get all data at once
